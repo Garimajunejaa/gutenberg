@@ -18,22 +18,25 @@ type DataPickerProps< Item > = {
 	onFinish: ( items: Item[] | Item ) => void;
 	selection: string[];
 	onChangeSelection: ( items: string[] ) => void;
-} & Omit<
-	DataViewsProps< Item >,
-	'actions' | 'selection' | 'onChangeSelection'
->;
+} & DataViewsProps< Item >;
 
 export default function DataPicker< Item >( {
 	multiple = false,
 	onFinish,
+
+	// selection/onChangeSelection are made mandatory for DataPicker.
+	selection,
+	onChangeSelection,
+
+	// getItemId is used by DataPicker, but still optional, we need to provide its default implementation.
+	getItemId = defaultGetItemId,
+
+	// Props that are not used by DataPicker, so they are omitted from being passed to DataViews.
+	actions: _actions,
+	isItemClickable: _isItemClickable,
+	onClickItem: _onClickItem,
 	...dataViewProps
 }: DataPickerProps< Item > ) {
-	const {
-		selection,
-		onChangeSelection,
-		getItemId = defaultGetItemId,
-	} = dataViewProps;
-
 	const actions = useMemo(
 		() =>
 			multiple
@@ -68,11 +71,16 @@ export default function DataPicker< Item >( {
 	);
 
 	return (
+		// TODO: Fix the type error here.
+		// @ts-expect-error - DataViewsProps is not assignable to DataPickerProps
 		<DataViews
 			{ ...dataViewProps }
 			actions={ actions }
 			isItemClickable={ isItemClickable }
 			onClickItem={ onClickItem }
+			getItemId={ getItemId }
+			selection={ selection }
+			onChangeSelection={ onChangeSelection }
 		/>
 	);
 }
