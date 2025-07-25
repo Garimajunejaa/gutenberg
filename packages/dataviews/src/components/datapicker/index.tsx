@@ -1,86 +1,278 @@
 /**
  * WordPress dependencies
  */
-import { useCallback, useMemo } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
-import { plus } from '@wordpress/icons';
+import { useContext, useRef, useState, useMemo } from '@wordpress/element';
+import { useMergeRefs, useResizeObserver } from '@wordpress/compose';
+import {
+	__experimentalGrid as Grid,
+	__experimentalVStack as VStack,
+} from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import type { DataViewsProps } from '../dataviews';
-import DataViews, { defaultGetItemId } from '../dataviews';
-
-const isItemClickable = () => true;
+import { useFilters } from '../dataviews-filters';
+import { normalizeFields } from '../../normalize-fields';
+import type {
+	Field,
+	NormalizedField,
+	SupportedLayouts,
+	View,
+	ViewBaseProps,
+} from '../../types';
+import type { SetSelection, SelectionOrUpdater } from '../../private-types';
+import DataViewsContext from '../dataviews-context';
+import DataViews from '../dataviews';
 
 type DataPickerProps< Item > = {
 	multiple?: boolean;
 	onFinish: ( items: Item[] | Item ) => void;
+
+	// DataViewsContext props
+	view: View;
+	onChangeView: ( view: View ) => void;
+	data: Item[];
+	fields: Field< Item >[];
+	paginationInfo: {
+		totalItems: number;
+		totalPages: number;
+	};
 	selection: string[];
-	onChangeSelection: ( items: string[] ) => void;
-} & DataViewsProps< Item >;
+	onChangeSelection: SetSelection;
+	getItemId: ( item: Item ) => string;
+	defaultLayouts: SupportedLayouts;
+};
+
+const isItemClickable = () => true;
 
 export default function DataPicker< Item >( {
-	multiple = false,
-	onFinish,
-
-	// selection/onChangeSelection are made mandatory for DataPicker.
-	selection,
+	// multiple = false,
+	// onFinish,
+	view,
+	onChangeView,
+	data,
+	fields,
+	paginationInfo,
+	selection: selectionProperty,
 	onChangeSelection,
-
-	// getItemId is used by DataPicker, but still optional, we need to provide its default implementation.
-	getItemId = defaultGetItemId,
-
-	// Props that are not used by DataPicker, so they are omitted from being passed to DataViews.
-	actions: _actions,
-	isItemClickable: _isItemClickable,
-	onClickItem: _onClickItem,
-	...dataViewProps
+	getItemId,
+	defaultLayouts,
 }: DataPickerProps< Item > ) {
-	const actions = useMemo(
-		() =>
-			multiple
-				? [
-						{
-							id: 'select',
-							label: __( 'Select' ),
-							isPrimary: true,
-							icon: plus,
-							isEligible() {
-								return Boolean( multiple );
-							},
-							callback( items: Item[] ) {
-								onFinish( items );
-							},
-							supportsBulk: Boolean( multiple ),
-						},
-				  ]
-				: [],
-		[ multiple, onFinish ]
-	);
-
-	const onClickItem = useCallback(
-		( item: Item ) => {
-			if ( multiple ) {
-				onChangeSelection( [ ...selection, getItemId( item ) ] );
-			} else {
-				onFinish( item );
-			}
+	const containerRef = useRef< HTMLDivElement | null >( null );
+	const [ containerWidth, setContainerWidth ] = useState( 0 );
+	const resizeObserverRef = useResizeObserver(
+		( resizeObserverEntries: any ) => {
+			setContainerWidth(
+				resizeObserverEntries[ 0 ].borderBoxSize[ 0 ].inlineSize
+			);
 		},
-		[ multiple, onChangeSelection, selection, getItemId, onFinish ]
+		{ box: 'border-box' }
+	);
+	const [ selectionState, setSelectionState ] = useState< string[] >( [] );
+	const isUncontrolled =
+		selectionProperty === undefined || onChangeSelection === undefined;
+	const _selection = isUncontrolled ? selectionState : selectionProperty;
+	const [ openedFilter, setOpenedFilter ] = useState< string | null >( null );
+	function setSelectionWithChange( value: SelectionOrUpdater ) {
+		const newValue =
+			typeof value === 'function' ? value( selection ) : value;
+		if ( isUncontrolled ) {
+			setSelectionState( newValue );
+		}
+		if ( onChangeSelection ) {
+			onChangeSelection( newValue );
+		}
+	}
+	const _fields = useMemo( () => normalizeFields( fields ), [ fields ] );
+	const selection = useMemo( () => {
+		return _selection.filter( ( id ) =>
+			data.some( ( item ) => getItemId( item ) === id )
+		);
+	}, [ _selection, data, getItemId ] );
+
+	const filters = useFilters( _fields, view );
+	const [ isShowingFilter, setIsShowingFilter ] = useState< boolean >( () =>
+		( filters || [] ).some( ( filter ) => filter.isPrimary )
 	);
 
 	return (
-		// TODO: Fix the type error here.
-		// @ts-expect-error - DataViewsProps is not assignable to DataPickerProps
-		<DataViews
-			{ ...dataViewProps }
-			actions={ actions }
-			isItemClickable={ isItemClickable }
-			onClickItem={ onClickItem }
-			getItemId={ getItemId }
-			selection={ selection }
-			onChangeSelection={ onChangeSelection }
-		/>
+		<DataViewsContext.Provider
+			value={ {
+				view,
+				onChangeView,
+				fields: _fields,
+				data,
+				paginationInfo,
+				selection,
+				onChangeSelection: setSelectionWithChange,
+				getItemId,
+				defaultLayouts,
+				isItemClickable,
+
+				// props to provide
+				filters,
+				openedFilter,
+				setOpenedFilter,
+				containerWidth,
+				containerRef: { current: null },
+				isShowingFilter,
+				setIsShowingFilter,
+			} }
+		>
+			<div
+				className="dataviews-wrapper"
+				ref={ useMergeRefs( [ containerRef, resizeObserverRef ] ) }
+			>
+				<DataViews.Search />
+				<DataPickerLayout />
+			</div>
+		</DataViewsContext.Provider>
+	);
+}
+
+function DataPickerLayout( {} ) {
+	const {
+		data,
+		fields,
+		getItemId,
+		isLoading,
+		view,
+		onChangeView,
+		selection,
+		onChangeSelection,
+	} = useContext( DataViewsContext );
+
+	if ( view.type === 'picker-grid' ) {
+		return (
+			<DataPickerGridLayout
+				data={ data }
+				getItemId={ getItemId }
+				fields={ fields }
+				isLoading={ isLoading }
+				onChangeView={ onChangeView }
+				view={ view }
+				selection={ selection }
+				onChangeSelection={ onChangeSelection }
+			/>
+		);
+	}
+
+	return null;
+}
+
+type DataPickerGridLayoutProps< Item > = {
+	data: ViewBaseProps< Item >[ 'data' ];
+	fields: ViewBaseProps< Item >[ 'fields' ];
+	getItemId: ViewBaseProps< Item >[ 'getItemId' ];
+	isLoading?: boolean;
+	onChangeView: ViewBaseProps< Item >[ 'onChangeView' ];
+	view: View;
+	selection: string[];
+	onChangeSelection: SetSelection;
+};
+
+function DataPickerGridLayout< Item >( {
+	data,
+	fields,
+	getItemId,
+	isLoading,
+	view,
+	selection,
+	onChangeSelection,
+}: DataPickerGridLayoutProps< Item > ) {
+	const hasData = !! data?.length;
+
+	const titleField = fields.find(
+		( field ) => field.id === view?.titleField
+	);
+	const mediaField = fields.find(
+		( field ) => field.id === view?.mediaField
+	);
+	const descriptionField = fields.find(
+		( field ) => field.id === view?.descriptionField
+	);
+
+	return (
+		hasData && (
+			<Grid
+				gap={ 8 }
+				columns={ 2 }
+				alignment="top"
+				aria-busy={ isLoading }
+			>
+				{ data.map( ( item ) => {
+					return (
+						<GridItem
+							key={ getItemId( item ) }
+							view={ view }
+							selection={ selection }
+							onChangeSelection={ onChangeSelection }
+							getItemId={ getItemId }
+							item={ item }
+							titleField={ titleField }
+							mediaField={ mediaField }
+							descriptionField={ descriptionField }
+						/>
+					);
+				} ) }
+			</Grid>
+		)
+	);
+}
+
+type GridItemProps< Item > = {
+	item: Item;
+	view: View;
+	selection: string[];
+	onChangeSelection: SetSelection;
+	getItemId: ( item: Item ) => string;
+	titleField: NormalizedField< Item > | undefined;
+	mediaField: NormalizedField< Item > | undefined;
+	descriptionField: NormalizedField< Item > | undefined;
+};
+
+function GridItem< Item >( {
+	item,
+	view,
+	selection,
+	onChangeSelection,
+	getItemId,
+	titleField,
+	mediaField,
+	descriptionField,
+}: GridItemProps< Item > ) {
+	const { showTitle = true, showMedia = true, showDescription = true } = view;
+	const renderedMediaField =
+		showMedia && mediaField?.render ? (
+			<mediaField.render item={ item } field={ mediaField } />
+		) : null;
+	const renderedTitleField =
+		showTitle && titleField?.render ? (
+			<titleField.render item={ item } field={ titleField } />
+		) : null;
+	const renderedDescriptionField =
+		showDescription && descriptionField?.render ? (
+			<descriptionField.render item={ item } field={ descriptionField } />
+		) : null;
+
+	const id = getItemId( item );
+	const isSelected = selection.includes( id );
+
+	return (
+		<VStack
+			aria-selected={ isSelected }
+			onClick={ () => {
+				onChangeSelection(
+					isSelected
+						? selection.filter( ( itemId ) => id !== itemId )
+						: [ ...selection, id ]
+				);
+			} }
+			spacing={ 0 }
+		>
+			{ renderedMediaField }
+			{ renderedTitleField }
+			{ renderedDescriptionField }
+		</VStack>
 	);
 }
