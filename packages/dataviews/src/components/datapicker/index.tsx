@@ -52,7 +52,7 @@ type DataPickerProps< Item > = {
 const isItemClickable = () => true;
 
 export default function DataPicker< Item >( {
-	// multiple = false,
+	multiple = false,
 	// onFinish,
 	view,
 	onChangeView,
@@ -147,7 +147,7 @@ export default function DataPicker< Item >( {
 				{ isShowingFilter && (
 					<DataViews.Filters className="dataviews-filters__container" />
 				) }
-				<DataPickerLayout />
+				<DataPickerLayout multiple={ multiple } />
 				<DataPickerFooter paginationInfo={ paginationInfo } />
 			</div>
 		</DataViewsContext.Provider>
@@ -171,7 +171,7 @@ function DataPickerFooter( {
 	);
 }
 
-function DataPickerLayout( {} ) {
+function DataPickerLayout( { multiple }: { multiple: boolean } ) {
 	const {
 		data,
 		fields,
@@ -181,11 +181,20 @@ function DataPickerLayout( {} ) {
 		onChangeView,
 		selection,
 		onChangeSelection,
+		paginationInfo,
 	} = useContext( DataViewsContext );
+
+	const { totalItems } = paginationInfo;
+	const currentPage = view.page ?? 1;
+	const startPosition =
+		currentPage === 1 || ! view.perPage
+			? 1
+			: ( currentPage - 1 ) * view.perPage + 1;
 
 	if ( view.type === 'picker-grid' ) {
 		return (
 			<DataPickerGridLayout
+				multiple={ multiple }
 				data={ data }
 				getItemId={ getItemId }
 				fields={ fields }
@@ -194,6 +203,8 @@ function DataPickerLayout( {} ) {
 				view={ view }
 				selection={ selection }
 				onChangeSelection={ onChangeSelection }
+				setSize={ totalItems }
+				startPosition={ startPosition }
 			/>
 		);
 	}
@@ -202,6 +213,7 @@ function DataPickerLayout( {} ) {
 }
 
 type DataPickerGridLayoutProps< Item > = {
+	multiple: boolean;
 	data: ViewBaseProps< Item >[ 'data' ];
 	fields: ViewBaseProps< Item >[ 'fields' ];
 	getItemId: ViewBaseProps< Item >[ 'getItemId' ];
@@ -210,9 +222,12 @@ type DataPickerGridLayoutProps< Item > = {
 	view: View;
 	selection: string[];
 	onChangeSelection: SetSelection;
+	setSize: number;
+	startPosition: number;
 };
 
 function DataPickerGridLayout< Item >( {
+	multiple,
 	data,
 	fields,
 	getItemId,
@@ -220,6 +235,8 @@ function DataPickerGridLayout< Item >( {
 	view,
 	selection,
 	onChangeSelection,
+	setSize,
+	startPosition,
 }: DataPickerGridLayoutProps< Item > ) {
 	const hasData = !! data?.length;
 
@@ -236,12 +253,16 @@ function DataPickerGridLayout< Item >( {
 	return (
 		hasData && (
 			<Grid
+				role="listbox"
+				aria-multiselectable={ multiple }
+				aria-orientation="horizontal"
 				gap={ 8 }
 				columns={ 2 }
 				alignment="top"
 				aria-busy={ isLoading }
 			>
-				{ data.map( ( item ) => {
+				{ data.map( ( item, index ) => {
+					const position = startPosition + index;
 					return (
 						<GridItem
 							key={ getItemId( item ) }
@@ -253,6 +274,8 @@ function DataPickerGridLayout< Item >( {
 							titleField={ titleField }
 							mediaField={ mediaField }
 							descriptionField={ descriptionField }
+							setSize={ setSize }
+							position={ position }
 						/>
 					);
 				} ) }
@@ -270,6 +293,8 @@ type GridItemProps< Item > = {
 	titleField: NormalizedField< Item > | undefined;
 	mediaField: NormalizedField< Item > | undefined;
 	descriptionField: NormalizedField< Item > | undefined;
+	setSize: number;
+	position: number;
 };
 
 function GridItem< Item >( {
@@ -281,6 +306,8 @@ function GridItem< Item >( {
 	titleField,
 	mediaField,
 	descriptionField,
+	setSize,
+	position,
 }: GridItemProps< Item > ) {
 	const { showTitle = true, showMedia = true, showDescription = true } = view;
 	const renderedMediaField =
@@ -301,7 +328,10 @@ function GridItem< Item >( {
 
 	return (
 		<VStack
+			role="option"
 			aria-selected={ isSelected }
+			aria-posinset={ position }
+			aria-setsize={ setSize }
 			className={ clsx( 'dataviews-picker-grid__card', {
 				'is-selected': isSelected,
 			} ) }
