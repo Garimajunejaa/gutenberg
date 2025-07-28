@@ -7,6 +7,10 @@
 		// TODO: Add selected styles
 	}
 
+	&.is-active {
+		outline: 2px solid var(--wp-admin-theme-color);
+	}
+
 	.dataviews-picker-grid__media {
 		width: 100%;
 		min-height: 200px;
