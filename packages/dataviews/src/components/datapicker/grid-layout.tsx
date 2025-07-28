@@ -164,6 +164,8 @@ function GridItem< Item >( {
 	const itemId = getItemId( item );
 	const isSelected = selection.includes( getItemId( item ) );
 
+	const descriptionId = `dataviews-picker-grid-item-${ itemId }-description`;
+
 	return (
 		<VStack
 			as="li"
@@ -173,6 +175,7 @@ function GridItem< Item >( {
 			aria-checked={ multiple ? isSelected : undefined }
 			aria-posinset={ position }
 			aria-setsize={ setSize }
+			aria-describedby={ descriptionId }
 			className={ className }
 			onClick={ () => {
 				onChangeSelection(
@@ -191,7 +194,11 @@ function GridItem< Item >( {
 			<div className="dataviews-picker-grid__title-field">
 				{ renderedTitleField }
 			</div>
-			<div className="dataviews-picker-grid__description-field">
+			<div
+				id={ descriptionId }
+				className="dataviews-picker-grid__description-field"
+				aria-hidden
+			>
 				{ renderedDescriptionField }
 			</div>
 		</VStack>
