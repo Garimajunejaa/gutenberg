@@ -4,7 +4,7 @@
 	position: relative;
 
 	&.is-selected {
-		// TODO: Add selected styles
+		background-color: rgba(var(--wp-admin-theme-color--rgb), 0.04);
 	}
 
 	&.is-active {

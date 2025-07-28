@@ -1,9 +1,16 @@
 /**
  * WordPress dependencies
  */
-import { useContext, useRef, useState, useMemo } from '@wordpress/element';
+import {
+	useCallback,
+	useContext,
+	useRef,
+	useState,
+	useMemo,
+} from '@wordpress/element';
 import { useMergeRefs, useResizeObserver } from '@wordpress/compose';
-import { __experimentalHStack as HStack } from '@wordpress/components';
+import { __experimentalHStack as HStack, Button } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -18,7 +25,7 @@ import DataPickerGridLayout from './grid-layout';
 
 type DataPickerProps< Item > = {
 	multiple?: boolean;
-	onFinish: ( items: Item[] | Item ) => void;
+	onFinish: ( items: string[] ) => void;
 
 	// DataViewsContext props
 	view: View;
@@ -29,8 +36,8 @@ type DataPickerProps< Item > = {
 		totalItems: number;
 		totalPages: number;
 	};
-	selection: string[];
-	onChangeSelection: SetSelection;
+	selection?: string[];
+	onChangeSelection?: SetSelection;
 	getItemId: ( item: Item ) => string;
 	defaultLayouts: SupportedLayouts;
 };
@@ -39,7 +46,7 @@ const isItemClickable = () => true;
 
 export default function DataPicker< Item >( {
 	multiple = false,
-	// onFinish,
+	onFinish,
 	view,
 	onChangeView,
 	data,
@@ -81,6 +88,10 @@ export default function DataPicker< Item >( {
 			data.some( ( item ) => getItemId( item ) === id )
 		);
 	}, [ _selection, data, getItemId ] );
+
+	const onFinishWithSelection = useCallback( () => {
+		onFinish( _selection );
+	}, [ onFinish, _selection ] );
 
 	const filters = useFilters( _fields, view );
 	const [ isShowingFilter, setIsShowingFilter ] = useState< boolean >( () =>
@@ -134,7 +145,10 @@ export default function DataPicker< Item >( {
 					<DataViews.Filters className="dataviews-filters__container" />
 				) }
 				<DataPickerLayout multiple={ multiple } />
-				<DataPickerFooter paginationInfo={ paginationInfo } />
+				<DataPickerFooter
+					paginationInfo={ paginationInfo }
+					onFinish={ onFinishWithSelection }
+				/>
 			</div>
 		</DataViewsContext.Provider>
 	);
@@ -142,8 +156,10 @@ export default function DataPicker< Item >( {
 
 function DataPickerFooter( {
 	paginationInfo,
+	onFinish,
 }: {
 	paginationInfo: { totalItems: number; totalPages: number };
+	onFinish: () => void;
 } ) {
 	const { totalItems, totalPages } = paginationInfo;
 	if ( ! totalItems || ! totalPages || totalPages <= 1 ) {
@@ -153,6 +169,13 @@ function DataPickerFooter( {
 	return (
 		<HStack expanded={ false } justify="start" className="dataviews-footer">
 			{ paginationInfo.totalPages > 1 && <DataViews.Pagination /> }
+			<Button
+				variant="primary"
+				onClick={ onFinish }
+				__next40pxDefaultSize
+			>
+				{ __( 'Finish selection' ) }
+			</Button>
 		</HStack>
 	);
 }

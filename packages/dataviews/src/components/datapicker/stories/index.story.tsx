@@ -44,11 +44,16 @@ export const Default = () => {
 			data={ shownData }
 			fields={ fields }
 			paginationInfo={ paginationInfo }
-			selection={ [] }
-			onChangeSelection={ () => {} }
 			getItemId={ ( item ) => item.id.toString() }
 			defaultLayouts={ {} }
-			onFinish={ () => {} }
+			onFinish={ ( ids ) => {
+				const selectedItems = data
+					.filter( ( item ) => ids.includes( item.id.toString() ) )
+					.map( ( item ) => item.title )
+					.join( ', ' );
+				// eslint-disable-next-line no-alert
+				alert( selectedItems );
+			} }
 		/>
 	);
 };

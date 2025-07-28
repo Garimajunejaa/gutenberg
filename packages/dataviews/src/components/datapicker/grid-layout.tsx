@@ -162,7 +162,7 @@ function GridItem< Item >( {
 		) : null;
 
 	const itemId = getItemId( item );
-	const isSelected = selection.includes( id );
+	const isSelected = selection.includes( getItemId( item ) );
 
 	return (
 		<VStack
