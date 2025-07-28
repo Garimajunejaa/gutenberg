@@ -2,17 +2,25 @@
  * WordPress dependencies
  */
 import { useRefEffect } from '@wordpress/compose';
-import { useState } from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
 
-export default function useActiveDescendent( {
-	itemCount,
+export default function useActiveDescendent< Item >( {
+	data,
 	orientation,
 }: {
-	itemCount: number;
+	data: Item[];
 	orientation: 'horizontal' | 'vertical';
 } ) {
 	const [ activeIndex, setActiveIndex ] = useState< number >( 0 );
 	const [ hasFocus, setHasFocus ] = useState< boolean >( false );
+
+	useEffect( () => {
+		// Set the active index back to 0 if the data changes.
+		// This is most likely due to pagination.
+		setActiveIndex( 0 );
+	}, [ data ] );
+
+	const itemCount = data.length;
 
 	const ref = useRefEffect(
 		( element ) => {

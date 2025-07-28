@@ -53,7 +53,7 @@ export default function DataPickerGridLayout< Item >( {
 		[ getItemId ]
 	);
 	const { ref: listBoxRef, activeIndex } = useActiveDescendent( {
-		itemCount: data.length,
+		data,
 		orientation: 'horizontal',
 	} );
 	const activeDescendent =
