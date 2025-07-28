@@ -16,6 +16,8 @@ import {
  */
 import type { NormalizedField, View, ViewBaseProps } from '../../types';
 import type { SetSelection } from '../../private-types';
+import useActiveDescendent from './use-active-descendent';
+import { useCallback } from '@wordpress/element';
 
 type DataPickerGridLayoutProps< Item > = {
 	multiple: boolean;
@@ -44,7 +46,17 @@ export default function DataPickerGridLayout< Item >( {
 	startPosition,
 }: DataPickerGridLayoutProps< Item > ) {
 	const hasData = !! data?.length;
-
+	const createId = useCallback(
+		( item: Item ) => {
+			return `dataviews-picker-item-${ getItemId( item ) }`;
+		},
+		[ getItemId ]
+	);
+	const listBoxRef = useActiveDescendent( {
+		data,
+		createId,
+		orientation: 'horizontal',
+	} );
 	const titleField = fields.find(
 		( field ) => field.id === view?.titleField
 	);
@@ -58,6 +70,7 @@ export default function DataPickerGridLayout< Item >( {
 	return (
 		hasData && (
 			<Grid
+				ref={ listBoxRef }
 				as="ul"
 				role="listbox"
 				aria-multiselectable={ multiple }
@@ -72,8 +85,9 @@ export default function DataPickerGridLayout< Item >( {
 					const position = startPosition + index;
 					return (
 						<GridItem
-							multiple={ multiple }
 							key={ getItemId( item ) }
+							id={ createId( item ) }
+							multiple={ multiple }
 							view={ view }
 							selection={ selection }
 							onChangeSelection={ onChangeSelection }
@@ -93,6 +107,7 @@ export default function DataPickerGridLayout< Item >( {
 }
 
 type GridItemProps< Item > = {
+	id: string;
 	multiple: boolean;
 	item: Item;
 	view: View;
@@ -107,6 +122,7 @@ type GridItemProps< Item > = {
 };
 
 function GridItem< Item >( {
+	id,
 	multiple,
 	item,
 	view,
@@ -133,13 +149,14 @@ function GridItem< Item >( {
 			<descriptionField.render item={ item } field={ descriptionField } />
 		) : null;
 
-	const id = getItemId( item );
+	const itemId = getItemId( item );
 	const isSelected = selection.includes( id );
 
 	return (
 		<VStack
 			as="li"
 			role="option"
+			id={ id }
 			aria-selected={ multiple ? undefined : isSelected }
 			aria-checked={ multiple ? isSelected : undefined }
 			aria-posinset={ position }
@@ -150,8 +167,10 @@ function GridItem< Item >( {
 			onClick={ () => {
 				onChangeSelection(
 					isSelected
-						? selection.filter( ( itemId ) => id !== itemId )
-						: [ ...selection, id ]
+						? selection.filter(
+								( selectionId ) => itemId !== selectionId
+						  )
+						: [ ...selection, itemId ]
 				);
 			} }
 			spacing={ 0 }
