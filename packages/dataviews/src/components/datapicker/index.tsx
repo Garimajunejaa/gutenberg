@@ -1,34 +1,20 @@
 /**
- * External dependencies
- */
-import clsx from 'clsx';
-
-/**
  * WordPress dependencies
  */
 import { useContext, useRef, useState, useMemo } from '@wordpress/element';
 import { useMergeRefs, useResizeObserver } from '@wordpress/compose';
-import {
-	__experimentalGrid as Grid,
-	__experimentalVStack as VStack,
-	__experimentalHStack as HStack,
-} from '@wordpress/components';
+import { __experimentalHStack as HStack } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import { useFilters } from '../dataviews-filters';
 import { normalizeFields } from '../../normalize-fields';
-import type {
-	Field,
-	NormalizedField,
-	SupportedLayouts,
-	View,
-	ViewBaseProps,
-} from '../../types';
+import type { Field, SupportedLayouts, View } from '../../types';
 import type { SetSelection, SelectionOrUpdater } from '../../private-types';
 import DataViewsContext from '../dataviews-context';
 import DataViews from '../dataviews';
+import DataPickerGridLayout from './grid-layout';
 
 type DataPickerProps< Item > = {
 	multiple?: boolean;
@@ -165,7 +151,7 @@ function DataPickerFooter( {
 	}
 
 	return (
-		<HStack expanded={ false } justify="end" className="dataviews-footer">
+		<HStack expanded={ false } justify="start" className="dataviews-footer">
 			{ paginationInfo.totalPages > 1 && <DataViews.Pagination /> }
 		</HStack>
 	);
@@ -210,149 +196,4 @@ function DataPickerLayout( { multiple }: { multiple: boolean } ) {
 	}
 
 	return null;
-}
-
-type DataPickerGridLayoutProps< Item > = {
-	multiple: boolean;
-	data: ViewBaseProps< Item >[ 'data' ];
-	fields: ViewBaseProps< Item >[ 'fields' ];
-	getItemId: ViewBaseProps< Item >[ 'getItemId' ];
-	isLoading?: boolean;
-	onChangeView: ViewBaseProps< Item >[ 'onChangeView' ];
-	view: View;
-	selection: string[];
-	onChangeSelection: SetSelection;
-	setSize: number;
-	startPosition: number;
-};
-
-function DataPickerGridLayout< Item >( {
-	multiple,
-	data,
-	fields,
-	getItemId,
-	isLoading,
-	view,
-	selection,
-	onChangeSelection,
-	setSize,
-	startPosition,
-}: DataPickerGridLayoutProps< Item > ) {
-	const hasData = !! data?.length;
-
-	const titleField = fields.find(
-		( field ) => field.id === view?.titleField
-	);
-	const mediaField = fields.find(
-		( field ) => field.id === view?.mediaField
-	);
-	const descriptionField = fields.find(
-		( field ) => field.id === view?.descriptionField
-	);
-
-	return (
-		hasData && (
-			<Grid
-				role="listbox"
-				aria-multiselectable={ multiple }
-				aria-orientation="horizontal"
-				gap={ 8 }
-				columns={ 2 }
-				alignment="top"
-				aria-busy={ isLoading }
-			>
-				{ data.map( ( item, index ) => {
-					const position = startPosition + index;
-					return (
-						<GridItem
-							key={ getItemId( item ) }
-							view={ view }
-							selection={ selection }
-							onChangeSelection={ onChangeSelection }
-							getItemId={ getItemId }
-							item={ item }
-							titleField={ titleField }
-							mediaField={ mediaField }
-							descriptionField={ descriptionField }
-							setSize={ setSize }
-							position={ position }
-						/>
-					);
-				} ) }
-			</Grid>
-		)
-	);
-}
-
-type GridItemProps< Item > = {
-	item: Item;
-	view: View;
-	selection: string[];
-	onChangeSelection: SetSelection;
-	getItemId: ( item: Item ) => string;
-	titleField: NormalizedField< Item > | undefined;
-	mediaField: NormalizedField< Item > | undefined;
-	descriptionField: NormalizedField< Item > | undefined;
-	setSize: number;
-	position: number;
-};
-
-function GridItem< Item >( {
-	item,
-	view,
-	selection,
-	onChangeSelection,
-	getItemId,
-	titleField,
-	mediaField,
-	descriptionField,
-	setSize,
-	position,
-}: GridItemProps< Item > ) {
-	const { showTitle = true, showMedia = true, showDescription = true } = view;
-	const renderedMediaField =
-		showMedia && mediaField?.render ? (
-			<mediaField.render item={ item } field={ mediaField } />
-		) : null;
-	const renderedTitleField =
-		showTitle && titleField?.render ? (
-			<titleField.render item={ item } field={ titleField } />
-		) : null;
-	const renderedDescriptionField =
-		showDescription && descriptionField?.render ? (
-			<descriptionField.render item={ item } field={ descriptionField } />
-		) : null;
-
-	const id = getItemId( item );
-	const isSelected = selection.includes( id );
-
-	return (
-		<VStack
-			role="option"
-			aria-selected={ isSelected }
-			aria-posinset={ position }
-			aria-setsize={ setSize }
-			className={ clsx( 'dataviews-picker-grid__card', {
-				'is-selected': isSelected,
-			} ) }
-			onClick={ () => {
-				onChangeSelection(
-					isSelected
-						? selection.filter( ( itemId ) => id !== itemId )
-						: [ ...selection, id ]
-				);
-			} }
-			spacing={ 0 }
-		>
-			<div className="dataviews-picker-grid__media">
-				{ renderedMediaField }
-			</div>
-			<div className="dataviews-picker-grid__title-field">
-				{ renderedTitleField }
-			</div>
-			<div className="dataviews-picker-grid__description-field">
-				{ renderedDescriptionField }
-			</div>
-		</VStack>
-	);
 }
