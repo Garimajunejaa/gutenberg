@@ -48,15 +48,17 @@ export default function DataPickerGridLayout< Item >( {
 	const hasData = !! data?.length;
 	const createId = useCallback(
 		( item: Item ) => {
-			return `dataviews-picker-item-${ getItemId( item ) }`;
+			return `dataviews-picker-grid-item-${ getItemId( item ) }`;
 		},
 		[ getItemId ]
 	);
-	const listBoxRef = useActiveDescendent( {
-		data,
-		createId,
+	const { ref: listBoxRef, activeIndex } = useActiveDescendent( {
+		itemCount: data.length,
 		orientation: 'horizontal',
 	} );
+	const activeDescendent =
+		activeIndex !== undefined ? createId( data[ activeIndex ] ) : undefined;
+
 	const titleField = fields.find(
 		( field ) => field.id === view?.titleField
 	);
@@ -75,6 +77,7 @@ export default function DataPickerGridLayout< Item >( {
 				role="listbox"
 				aria-multiselectable={ multiple }
 				aria-orientation="horizontal"
+				aria-activedescendant={ activeDescendent }
 				tabIndex={ 0 }
 				gap={ 8 }
 				columns={ 2 }
@@ -83,10 +86,17 @@ export default function DataPickerGridLayout< Item >( {
 			>
 				{ data.map( ( item, index ) => {
 					const position = startPosition + index;
+					const itemId = getItemId( item );
+					const htmlId = createId( item );
+					const className = clsx( 'dataviews-picker-grid__card', {
+						'is-active': activeIndex === index,
+						'is-selected': selection.includes( itemId ),
+					} );
 					return (
 						<GridItem
-							key={ getItemId( item ) }
-							id={ createId( item ) }
+							key={ itemId }
+							id={ htmlId }
+							className={ className }
 							multiple={ multiple }
 							view={ view }
 							selection={ selection }
@@ -108,6 +118,7 @@ export default function DataPickerGridLayout< Item >( {
 
 type GridItemProps< Item > = {
 	id: string;
+	className: string;
 	multiple: boolean;
 	item: Item;
 	view: View;
@@ -123,6 +134,7 @@ type GridItemProps< Item > = {
 
 function GridItem< Item >( {
 	id,
+	className,
 	multiple,
 	item,
 	view,
@@ -161,9 +173,7 @@ function GridItem< Item >( {
 			aria-checked={ multiple ? isSelected : undefined }
 			aria-posinset={ position }
 			aria-setsize={ setSize }
-			className={ clsx( 'dataviews-picker-grid__card', {
-				'is-selected': isSelected,
-			} ) }
+			className={ className }
 			onClick={ () => {
 				onChangeSelection(
 					isSelected
