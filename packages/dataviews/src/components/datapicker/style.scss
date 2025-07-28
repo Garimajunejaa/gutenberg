@@ -1,0 +1,36 @@
+.dataviews-picker-grid__card {
+	height: 100%;
+	justify-content: flex-start;
+	position: relative;
+
+	&.is-selected {
+		// TODO: Add selected styles
+	}
+
+	.dataviews-picker-grid__media {
+		width: 100%;
+		min-height: 200px;
+		aspect-ratio: 1/1;
+		background-color: $gray-100;
+		border-radius: $grid-unit-05;
+		position: relative;
+
+		img {
+			object-fit: cover;
+			width: 100%;
+			height: 100%;
+		}
+	}
+
+	.dataviews-picker-grid__title-field {
+		min-height: $grid-unit-30; // Preserve layout when there is no ellipsis button
+		display: flex;
+		align-items: center;
+	}
+
+	.dataviews-picker-grid__description-field {
+		// min-height: $grid-unit-30; // Preserve layout when there is no ellipsis button
+		display: flex;
+		align-items: center;
+	}
+}

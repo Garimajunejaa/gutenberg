@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import clsx from 'clsx';
+
+/**
  * WordPress dependencies
  */
 import { useContext, useRef, useState, useMemo } from '@wordpress/element';
@@ -6,6 +11,7 @@ import { useMergeRefs, useResizeObserver } from '@wordpress/compose';
 import {
 	__experimentalGrid as Grid,
 	__experimentalVStack as VStack,
+	__experimentalHStack as HStack,
 } from '@wordpress/components';
 
 /**
@@ -123,10 +129,45 @@ export default function DataPicker< Item >( {
 				className="dataviews-wrapper"
 				ref={ useMergeRefs( [ containerRef, resizeObserverRef ] ) }
 			>
-				<DataViews.Search />
+				<HStack
+					alignment="top"
+					justify="space-between"
+					className="dataviews__view-actions"
+					spacing={ 1 }
+				>
+					<HStack
+						justify="start"
+						expanded={ false }
+						className="dataviews__search"
+					>
+						<DataViews.Search />
+						<DataViews.FiltersToggle />
+					</HStack>
+				</HStack>
+				{ isShowingFilter && (
+					<DataViews.Filters className="dataviews-filters__container" />
+				) }
 				<DataPickerLayout />
+				<DataPickerFooter paginationInfo={ paginationInfo } />
 			</div>
 		</DataViewsContext.Provider>
+	);
+}
+
+function DataPickerFooter( {
+	paginationInfo,
+}: {
+	paginationInfo: { totalItems: number; totalPages: number };
+} ) {
+	const { totalItems, totalPages } = paginationInfo;
+	if ( ! totalItems || ! totalPages || totalPages <= 1 ) {
+		return null;
+	}
+
+	return (
+		<HStack expanded={ false } justify="end" className="dataviews-footer">
+			{ paginationInfo.totalPages > 1 && <DataViews.Pagination /> }
+		</HStack>
 	);
 }
 
@@ -261,6 +302,9 @@ function GridItem< Item >( {
 	return (
 		<VStack
 			aria-selected={ isSelected }
+			className={ clsx( 'dataviews-picker-grid__card', {
+				'is-selected': isSelected,
+			} ) }
 			onClick={ () => {
 				onChangeSelection(
 					isSelected
@@ -270,9 +314,15 @@ function GridItem< Item >( {
 			} }
 			spacing={ 0 }
 		>
-			{ renderedMediaField }
-			{ renderedTitleField }
-			{ renderedDescriptionField }
+			<div className="dataviews-picker-grid__media">
+				{ renderedMediaField }
+			</div>
+			<div className="dataviews-picker-grid__title-field">
+				{ renderedTitleField }
+			</div>
+			<div className="dataviews-picker-grid__description-field">
+				{ renderedDescriptionField }
+			</div>
 		</VStack>
 	);
 }
