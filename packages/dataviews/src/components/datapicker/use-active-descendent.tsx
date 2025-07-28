@@ -36,6 +36,8 @@ export default function useActiveDescendent( {
 				) {
 					const candidateIndex = activeIndex - 1;
 					if ( candidateIndex >= 0 ) {
+						// Prevent VoiceOver from moving focus outside the focused list.
+						event.preventDefault();
 						setActiveIndex( candidateIndex );
 					}
 				} else if (
@@ -46,6 +48,8 @@ export default function useActiveDescendent( {
 				) {
 					const candidateIndex = activeIndex + 1;
 					if ( candidateIndex <= itemCount - 1 ) {
+						// Prevent VoiceOver from moving focus outside the focused list.
+						event.preventDefault();
 						setActiveIndex( candidateIndex );
 					}
 				}
