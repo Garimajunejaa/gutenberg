@@ -9,7 +9,9 @@ import clsx from 'clsx';
 import {
 	__experimentalGrid as Grid,
 	__experimentalVStack as VStack,
+	CheckboxControl,
 } from '@wordpress/components';
+import { useCallback } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -17,7 +19,6 @@ import {
 import type { NormalizedField, View, ViewBaseProps } from '../../types';
 import type { SetSelection } from '../../private-types';
 import useActiveDescendent from './use-active-descendent';
-import { useCallback } from '@wordpress/element';
 
 type DataPickerGridLayoutProps< Item > = {
 	multiple: boolean;
@@ -192,6 +193,15 @@ function GridItem< Item >( {
 			<div className="dataviews-picker-grid__media">
 				{ renderedMediaField }
 			</div>
+			<CheckboxControl
+				// This is a decorative checkbox, so it's hidden from screen readers.
+				aria-hidden
+				tabIndex={ -1 }
+				__nextHasNoMarginBottom
+				className="dataviews-picker-grid__selection-checkbox"
+				checked={ isSelected }
+				onChange={ () => {} }
+			/>
 			<div className="dataviews-picker-grid__title-field">
 				{ renderedTitleField }
 			</div>
