@@ -73,6 +73,7 @@ export default function DataPickerGridLayout< Item >( {
 		hasData && (
 			<Grid
 				ref={ listBoxRef }
+				className="dataviews-picker-grid"
 				as="ul"
 				role="listbox"
 				aria-multiselectable={ multiple }
