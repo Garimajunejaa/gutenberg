@@ -52,7 +52,7 @@ export default function DataPicker< Item >( {
 	data,
 	fields,
 	paginationInfo,
-	selection: selectionProperty,
+	selection,
 	onChangeSelection,
 	getItemId,
 	defaultLayouts,
@@ -69,12 +69,12 @@ export default function DataPicker< Item >( {
 	);
 	const [ selectionState, setSelectionState ] = useState< string[] >( [] );
 	const isUncontrolled =
-		selectionProperty === undefined || onChangeSelection === undefined;
-	const _selection = isUncontrolled ? selectionState : selectionProperty;
+		selection === undefined || onChangeSelection === undefined;
+	const _selection = isUncontrolled ? selectionState : selection;
 	const [ openedFilter, setOpenedFilter ] = useState< string | null >( null );
 	function setSelectionWithChange( value: SelectionOrUpdater ) {
 		const newValue =
-			typeof value === 'function' ? value( selection ) : value;
+			typeof value === 'function' ? value( _selection ) : value;
 		if ( isUncontrolled ) {
 			setSelectionState( newValue );
 		}
@@ -83,11 +83,6 @@ export default function DataPicker< Item >( {
 		}
 	}
 	const _fields = useMemo( () => normalizeFields( fields ), [ fields ] );
-	const selection = useMemo( () => {
-		return _selection.filter( ( id ) =>
-			data.some( ( item ) => getItemId( item ) === id )
-		);
-	}, [ _selection, data, getItemId ] );
 
 	const onFinishWithSelection = useCallback( () => {
 		onFinish( _selection );
@@ -106,7 +101,7 @@ export default function DataPicker< Item >( {
 				fields: _fields,
 				data,
 				paginationInfo,
-				selection,
+				selection: _selection,
 				onChangeSelection: setSelectionWithChange,
 				getItemId,
 				defaultLayouts,
