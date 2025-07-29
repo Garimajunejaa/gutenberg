@@ -210,6 +210,11 @@ export default function PostList( { postType } ) {
 		activeView = 'all',
 	} = location.query;
 	const [ selection, setSelection ] = useState( postId?.split( ',' ) ?? [] );
+
+	// Infinite scroll state
+	const [ allLoadedRecords, setAllLoadedRecords ] = useState( [] );
+	const [ isLoadingMore, setIsLoadingMore ] = useState( false );
+
 	const onChangeSelection = useCallback(
 		( items ) => {
 			setSelection( items );
@@ -328,7 +333,68 @@ export default function PostList( { postType } ) {
 		return records;
 	}, [ records, fields, isLoadingFields, view?.sort ] );
 
-	const ids = data?.map( ( record ) => getItemId( record ) ) ?? [];
+	// Handle infinite scroll data management
+	const isInfiniteScroll =
+		view.type === 'grid' && view.layout?.infiniteScroll;
+	const currentPage = view.page || 1;
+
+	// Update accumulated records when new data arrives
+	useEffect( () => {
+		if ( ! isInfiniteScroll ) {
+			setAllLoadedRecords( [] );
+			return;
+		}
+
+		if ( ! data ) {
+			return;
+		}
+
+		if ( currentPage === 1 ) {
+			// First page - replace all data
+			setAllLoadedRecords( data );
+		} else {
+			// Subsequent pages - append to existing data
+			setAllLoadedRecords( ( prev ) => {
+				const existingIds = new Set( prev.map( getItemId ) );
+				const newRecords = data.filter(
+					( record ) => ! existingIds.has( getItemId( record ) )
+				);
+				return [ ...prev, ...newRecords ];
+			} );
+		}
+		setIsLoadingMore( false );
+	}, [ data, currentPage, isInfiniteScroll ] );
+
+	// Create infinite scroll handler
+	const infiniteScrollHandler = useCallback( () => {
+		if (
+			! isInfiniteScroll ||
+			isLoadingMore ||
+			isLoadingData ||
+			currentPage >= totalPages
+		) {
+			return;
+		}
+
+		setIsLoadingMore( true );
+		setView( {
+			...view,
+			page: currentPage + 1,
+		} );
+	}, [
+		isInfiniteScroll,
+		isLoadingMore,
+		isLoadingData,
+		currentPage,
+		totalPages,
+		setView,
+		view,
+	] );
+
+	// Use appropriate data based on infinite scroll mode
+	const displayData = isInfiniteScroll ? allLoadedRecords : data;
+
+	const ids = displayData?.map( ( record ) => getItemId( record ) ) ?? [];
 	const prevIds = usePrevious( ids ) ?? [];
 	const deletedIds = prevIds.filter( ( id ) => ! ids.includes( id ) );
 	const postIdWasDeleted = deletedIds.includes( postId );
@@ -414,8 +480,8 @@ export default function PostList( { postType } ) {
 				paginationInfo={ paginationInfo }
 				fields={ fields }
 				actions={ actions }
-				data={ data || EMPTY_ARRAY }
-				isLoading={ isLoadingData || isLoadingFields }
+				data={ displayData || EMPTY_ARRAY }
+				isLoading={ isLoadingData || isLoadingFields || isLoadingMore }
 				view={ view }
 				onChangeView={ setView }
 				selection={ selection }
@@ -427,6 +493,7 @@ export default function PostList( { postType } ) {
 				getItemId={ getItemId }
 				getItemLevel={ getItemLevel }
 				defaultLayouts={ defaultLayouts }
+				infiniteScrollHandler={ infiniteScrollHandler }
 				header={
 					window.__experimentalQuickEditDataViews &&
 					view.type !== LAYOUT_LIST &&

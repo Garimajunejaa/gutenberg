@@ -492,6 +492,11 @@ export interface ViewGrid extends ViewBase {
 		 * The preview size of the grid.
 		 */
 		previewSize?: number;
+
+		/**
+		 * Whether infinite scroll is enabled for the grid.
+		 */
+		infiniteScroll?: boolean;
 	};
 }
 
