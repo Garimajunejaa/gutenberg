@@ -7,11 +7,11 @@ import clsx from 'clsx';
  * WordPress dependencies
  */
 import {
+	Composite,
 	__experimentalGrid as Grid,
 	__experimentalVStack as VStack,
 	CheckboxControl,
 } from '@wordpress/components';
-import { useCallback } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -22,7 +22,6 @@ import type {
 	ViewBaseProps,
 } from '../../types';
 import type { SetSelection } from '../../private-types';
-import useActiveDescendent from './use-active-descendent';
 import { useUpdatedPreviewSizeOnViewportChange } from '../../dataviews-layouts/grid/preview-size-picker';
 
 type DataPickerGridLayoutProps< Item > = {
@@ -52,18 +51,6 @@ export default function DataPickerGridLayout< Item >( {
 	startPosition,
 }: DataPickerGridLayoutProps< Item > ) {
 	const hasData = !! data?.length;
-	const createId = useCallback(
-		( item: Item ) => {
-			return `dataviews-picker-grid-item-${ getItemId( item ) }`;
-		},
-		[ getItemId ]
-	);
-	const { ref: listBoxRef, activeIndex } = useActiveDescendent( {
-		data,
-		orientation: 'horizontal',
-	} );
-	const activeDescendent =
-		activeIndex !== undefined ? createId( data[ activeIndex ] ) : undefined;
 
 	const titleField = fields.find(
 		( field ) => field.id === view?.titleField
@@ -85,33 +72,36 @@ export default function DataPickerGridLayout< Item >( {
 
 	return (
 		hasData && (
-			<Grid
-				ref={ listBoxRef }
-				className="dataviews-picker-grid"
-				as="ul"
-				role="listbox"
-				aria-multiselectable={ multiple }
-				aria-orientation="horizontal"
-				aria-activedescendant={ activeDescendent }
-				tabIndex={ 0 }
-				gap={ 8 }
-				columns={ 2 }
-				alignment="top"
-				aria-busy={ isLoading }
-				style={ gridStyle }
+			<Composite
+				virtualFocus
+				focusable
+				orientation="horizontal"
+				render={ ( props ) => (
+					<Grid
+						{ ...props }
+						as="ul"
+						className="dataviews-picker-grid"
+						role="listbox"
+						aria-multiselectable={ multiple }
+						tabIndex={ 0 }
+						gap={ 8 }
+						columns={ 2 }
+						alignment="top"
+						aria-busy={ isLoading }
+						style={ gridStyle }
+						children={ props.children }
+					/>
+				) }
 			>
 				{ data.map( ( item, index ) => {
 					const position = startPosition + index;
 					const itemId = getItemId( item );
-					const htmlId = createId( item );
 					const className = clsx( 'dataviews-picker-grid__card', {
-						'is-active': activeIndex === index,
 						'is-selected': selection.includes( itemId ),
 					} );
 					return (
 						<GridItem
 							key={ itemId }
-							id={ htmlId }
 							className={ className }
 							multiple={ multiple }
 							view={ view }
@@ -127,13 +117,12 @@ export default function DataPickerGridLayout< Item >( {
 						/>
 					);
 				} ) }
-			</Grid>
+			</Composite>
 		)
 	);
 }
 
 type GridItemProps< Item > = {
-	id: string;
 	className: string;
 	multiple: boolean;
 	item: Item;
@@ -149,7 +138,6 @@ type GridItemProps< Item > = {
 };
 
 function GridItem< Item >( {
-	id,
 	className,
 	multiple,
 	item,
@@ -183,26 +171,32 @@ function GridItem< Item >( {
 	const descriptionId = `dataviews-picker-grid-item-${ itemId }-description`;
 
 	return (
-		<VStack
-			as="li"
-			role="option"
-			id={ id }
-			aria-selected={ multiple ? undefined : isSelected }
-			aria-checked={ multiple ? isSelected : undefined }
-			aria-posinset={ position }
-			aria-setsize={ setSize }
-			aria-describedby={ descriptionId }
-			className={ className }
-			onClick={ () => {
-				onChangeSelection(
-					isSelected
-						? selection.filter(
-								( selectionId ) => itemId !== selectionId
-						  )
-						: [ ...selection, itemId ]
-				);
-			} }
-			spacing={ 0 }
+		<Composite.Item
+			render={ ( props ) => (
+				<VStack
+					{ ...props }
+					children={ props.children }
+					as="li"
+					spacing={ 0 }
+					className={ className }
+					role="option"
+					aria-posinset={ position }
+					aria-setsize={ setSize }
+					aria-selected={ multiple ? undefined : isSelected }
+					aria-checked={ multiple ? isSelected : undefined }
+					aria-describedby={ descriptionId }
+					onClick={ () => {
+						onChangeSelection(
+							isSelected
+								? selection.filter(
+										( selectionId ) =>
+											itemId !== selectionId
+								  )
+								: [ ...selection, itemId ]
+						);
+					} }
+				/>
+			) }
 		>
 			<div className="dataviews-picker-grid__media">
 				{ renderedMediaField }
@@ -226,6 +220,6 @@ function GridItem< Item >( {
 			>
 				{ renderedDescriptionField }
 			</div>
-		</VStack>
+		</Composite.Item>
 	);
 }
