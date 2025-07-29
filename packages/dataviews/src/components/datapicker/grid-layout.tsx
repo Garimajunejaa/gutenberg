@@ -202,7 +202,8 @@ function GridItem< Item >( {
 				{ renderedMediaField }
 			</div>
 			<CheckboxControl
-				// This is a decorative checkbox, so it's hidden from screen readers.
+				// This checkbox is decorative so that we don't introduce extra tab stops.
+				// It's hidden from screen readers.
 				aria-hidden
 				tabIndex={ -1 }
 				__nextHasNoMarginBottom
