@@ -492,6 +492,13 @@ export interface ViewGrid extends ViewBase {
 
 export interface ViewPickerGrid extends ViewBase {
 	type: 'picker-grid';
+
+	layout?: {
+		/**
+		 * The preview size of the grid.
+		 */
+		previewSize?: number;
+	};
 }
 
 export type View = ViewList | ViewGrid | ViewTable | ViewPickerGrid;

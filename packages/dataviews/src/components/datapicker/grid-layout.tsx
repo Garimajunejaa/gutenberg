@@ -16,9 +16,14 @@ import { useCallback } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import type { NormalizedField, View, ViewBaseProps } from '../../types';
+import type {
+	NormalizedField,
+	ViewPickerGrid,
+	ViewBaseProps,
+} from '../../types';
 import type { SetSelection } from '../../private-types';
 import useActiveDescendent from './use-active-descendent';
+import { useUpdatedPreviewSizeOnViewportChange } from '../../dataviews-layouts/grid/preview-size-picker';
 
 type DataPickerGridLayoutProps< Item > = {
 	multiple: boolean;
@@ -27,7 +32,7 @@ type DataPickerGridLayoutProps< Item > = {
 	getItemId: ViewBaseProps< Item >[ 'getItemId' ];
 	isLoading?: boolean;
 	onChangeView: ViewBaseProps< Item >[ 'onChangeView' ];
-	view: View;
+	view: ViewPickerGrid;
 	selection: string[];
 	onChangeSelection: SetSelection;
 	setSize: number;
@@ -70,6 +75,14 @@ export default function DataPickerGridLayout< Item >( {
 		( field ) => field.id === view?.descriptionField
 	);
 
+	const updatedPreviewSize = useUpdatedPreviewSizeOnViewportChange();
+	const usedPreviewSize = updatedPreviewSize || view.layout?.previewSize;
+	const gridStyle = usedPreviewSize
+		? {
+				gridTemplateColumns: `repeat(${ usedPreviewSize }, minmax(0, 1fr))`,
+		  }
+		: {};
+
 	return (
 		hasData && (
 			<Grid
@@ -85,6 +98,7 @@ export default function DataPickerGridLayout< Item >( {
 				columns={ 2 }
 				alignment="top"
 				aria-busy={ isLoading }
+				style={ gridStyle }
 			>
 				{ data.map( ( item, index ) => {
 					const position = startPosition + index;
@@ -123,7 +137,7 @@ type GridItemProps< Item > = {
 	className: string;
 	multiple: boolean;
 	item: Item;
-	view: View;
+	view: ViewPickerGrid;
 	selection: string[];
 	onChangeSelection: SetSelection;
 	getItemId: ( item: Item ) => string;
