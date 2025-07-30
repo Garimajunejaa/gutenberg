@@ -74,7 +74,6 @@ export default function DataPickerGridLayout< Item >( {
 		hasData && (
 			<Composite
 				virtualFocus
-				focusable
 				orientation="horizontal"
 				render={ ( props ) => (
 					<Grid

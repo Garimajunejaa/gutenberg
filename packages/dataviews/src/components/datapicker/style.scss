@@ -28,6 +28,12 @@
 }
 
 .dataviews-picker-grid:focus-visible {
+	// Only show one focus outline at a time. When focus is on a child element,
+	// hide the grid's own focus outline.
+	&[aria-activedescendant] {
+		outline: none;
+	}
+
 	[data-active-item="true"] {
 		outline: 2px solid var(--wp-admin-theme-color);
 	}
