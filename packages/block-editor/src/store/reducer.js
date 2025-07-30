@@ -2346,7 +2346,10 @@ function getDerivedBlockEditingModesForTree(
 				}
 
 				// Allow selection of template parts outside of sections.
-				if ( blockName === 'core/template-part' ) {
+				if (
+					blockName === 'core/template-part' ||
+					blockName === 'core/navigation'
+				) {
 					derivedBlockEditingModes.set( clientId, 'contentOnly' );
 					return;
 				}
