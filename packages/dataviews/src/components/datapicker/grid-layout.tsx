@@ -11,7 +11,9 @@ import {
 	__experimentalGrid as Grid,
 	__experimentalVStack as VStack,
 	CheckboxControl,
+	Spinner,
 } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -73,54 +75,69 @@ export default function DataPickerGridLayout< Item >( {
 		: {};
 
 	return (
-		hasData && (
-			<Composite
-				virtualFocus
-				orientation="horizontal"
-				render={ ( props ) => (
-					<Grid
-						{ ...props }
-						as="ul"
-						className="dataviews-picker-grid"
-						aria-label={ label }
-						role="listbox"
-						aria-multiselectable={ multiple }
-						tabIndex={ 0 }
-						gap={ 8 }
-						columns={ 2 }
-						alignment="top"
-						aria-busy={ isLoading }
-						style={ gridStyle }
-						children={ props.children }
-					/>
-				) }
-			>
-				{ data.map( ( item, index ) => {
-					const position = startPosition + index;
-					const itemId = getItemId( item );
-					const className = clsx( 'dataviews-picker-grid__card', {
-						'is-selected': selection.includes( itemId ),
-					} );
-					return (
-						<GridItem
-							key={ itemId }
-							className={ className }
-							multiple={ multiple }
-							view={ view }
-							selection={ selection }
-							onChangeSelection={ onChangeSelection }
-							getItemId={ getItemId }
-							item={ item }
-							titleField={ titleField }
-							mediaField={ mediaField }
-							descriptionField={ descriptionField }
-							setSize={ setSize }
-							position={ position }
+		<>
+			{ hasData && (
+				<Composite
+					virtualFocus
+					orientation="horizontal"
+					render={ ( props ) => (
+						<Grid
+							{ ...props }
+							as="ul"
+							className="dataviews-picker-grid"
+							aria-label={ label }
+							role="listbox"
+							aria-multiselectable={ multiple }
+							tabIndex={ 0 }
+							gap={ 8 }
+							columns={ 2 }
+							alignment="top"
+							aria-busy={ isLoading }
+							style={ gridStyle }
+							children={ props.children }
 						/>
-					);
-				} ) }
-			</Composite>
-		)
+					) }
+				>
+					{ data.map( ( item, index ) => {
+						const position = startPosition + index;
+						const itemId = getItemId( item );
+						const className = clsx( 'dataviews-picker-grid__card', {
+							'is-selected': selection.includes( itemId ),
+						} );
+						return (
+							<GridItem
+								key={ itemId }
+								className={ className }
+								multiple={ multiple }
+								view={ view }
+								selection={ selection }
+								onChangeSelection={ onChangeSelection }
+								getItemId={ getItemId }
+								item={ item }
+								titleField={ titleField }
+								mediaField={ mediaField }
+								descriptionField={ descriptionField }
+								setSize={ setSize }
+								position={ position }
+							/>
+						);
+					} ) }
+				</Composite>
+			) }
+			{
+				// Render empty state.
+				! hasData && (
+					<div
+						className={ clsx( {
+							'dataviews-loading': isLoading,
+							'dataviews-no-results': ! isLoading,
+						} ) }
+					>
+						<p>{ isLoading ? <Spinner /> : __( 'No results' ) }</p>
+					</div>
+				)
+			}
+		</>
 	);
 }
 
