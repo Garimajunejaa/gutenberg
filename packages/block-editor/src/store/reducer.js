@@ -2339,6 +2339,7 @@ function getDerivedBlockEditingModesForTree(
 				clientId,
 				sectionClientIds
 			);
+
 			if ( ! isInSection ) {
 				if ( clientId === '' ) {
 					derivedBlockEditingModes.set( clientId, 'disabled' );
@@ -2346,10 +2347,7 @@ function getDerivedBlockEditingModesForTree(
 				}
 
 				// Allow selection of template parts outside of sections.
-				if (
-					blockName === 'core/template-part' ||
-					blockName === 'core/navigation'
-				) {
+				if ( blockName === 'core/template-part' ) {
 					derivedBlockEditingModes.set( clientId, 'contentOnly' );
 					return;
 				}

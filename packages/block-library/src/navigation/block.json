@@ -22,7 +22,8 @@
 	"textdomain": "default",
 	"attributes": {
 		"ref": {
-			"type": "number"
+			"type": "number",
+			"role": "content"
 		},
 		"textColor": {
 			"type": "string"
