@@ -2339,7 +2339,6 @@ function getDerivedBlockEditingModesForTree(
 				clientId,
 				sectionClientIds
 			);
-
 			if ( ! isInSection ) {
 				if ( clientId === '' ) {
 					derivedBlockEditingModes.set( clientId, 'disabled' );
