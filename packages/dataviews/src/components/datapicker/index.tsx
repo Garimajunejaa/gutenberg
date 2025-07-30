@@ -211,50 +211,60 @@ function DataPickerFooter< Item >( {
 	const allSelected = selection.length === data.length;
 
 	return (
-		<HStack expanded={ false } justify="start" className="dataviews-footer">
-			{ paginationInfo.totalPages > 1 && <DataViews.Pagination /> }
-			<CheckboxControl
-				className="dataviews-view-table-selection-checkbox"
-				__nextHasNoMarginBottom
-				checked={ allSelected }
-				indeterminate={ selection.length > 0 && ! allSelected }
-				onChange={ () => {
-					if ( allSelected ) {
-						onChangeSelection( [] );
-					} else {
-						onChangeSelection(
-							data.map( ( item ) => getItemId( item ) )
-						);
-					}
-				} }
-				aria-label={
-					allSelected ? __( 'Deselect all' ) : __( 'Select all' )
-				}
-			/>
-			<span className="dataviews-bulk-actions-footer__item-count">
-				{ message }
-			</span>
-			{ selection.length > 0 && (
-				<Button
-					icon={ closeSmall }
-					showTooltip
-					tooltipPosition="top"
-					size="compact"
-					label={ __( 'Cancel' ) }
-					onClick={ () => {
-						onChangeSelection( EMPTY_ARRAY );
+		<HStack
+			expanded={ false }
+			justify="space-between"
+			className="dataviews-footer"
+		>
+			<HStack justify="start">
+				{ paginationInfo.totalPages > 1 && <DataViews.Pagination /> }
+			</HStack>
+			<HStack justify="end">
+				<CheckboxControl
+					className="dataviews-view-table-selection-checkbox"
+					__nextHasNoMarginBottom
+					checked={ allSelected }
+					indeterminate={ selection.length > 0 && ! allSelected }
+					onChange={ () => {
+						if ( allSelected ) {
+							onChangeSelection( [] );
+						} else {
+							onChangeSelection(
+								data.map( ( item ) => getItemId( item ) )
+							);
+						}
 					} }
+					aria-label={
+						allSelected ? __( 'Deselect all' ) : __( 'Select all' )
+					}
 				/>
-			) }
-			<Button
-				variant="primary"
-				onClick={ onFinish }
-				__next40pxDefaultSize
-				disabled={ selection.length === 0 }
-				accessibleWhenDisabled
-			>
-				{ __( 'Select' ) }
-			</Button>
+				<span className="dataviews-bulk-actions-footer__item-count">
+					{ message }
+				</span>
+
+				{ selection.length > 0 && (
+					<Button
+						icon={ closeSmall }
+						showTooltip
+						tooltipPosition="top"
+						size="compact"
+						label={ __( 'Cancel' ) }
+						onClick={ () => {
+							onChangeSelection( EMPTY_ARRAY );
+						} }
+					/>
+				) }
+				<Button
+					className="dataviews-picker-footer__button"
+					variant="primary"
+					onClick={ onFinish }
+					__next40pxDefaultSize
+					disabled={ selection.length === 0 }
+					accessibleWhenDisabled
+				>
+					{ __( 'Select' ) }
+				</Button>
+			</HStack>
 		</HStack>
 	);
 }
