@@ -185,14 +185,20 @@ function GridItem< Item >( {
 					aria-checked={ multiple ? isSelected : undefined }
 					aria-describedby={ descriptionId }
 					onClick={ () => {
-						onChangeSelection(
-							isSelected
-								? selection.filter(
-										( selectionId ) =>
-											itemId !== selectionId
-								  )
-								: [ ...selection, itemId ]
-						);
+						if ( isSelected ) {
+							onChangeSelection(
+								selection.filter(
+									( selectionId ) => itemId !== selectionId
+								)
+							);
+							return;
+						}
+
+						if ( multiple ) {
+							onChangeSelection( [ ...selection, itemId ] );
+						} else {
+							onChangeSelection( [ itemId ] );
+						}
 					} }
 				/>
 			) }
