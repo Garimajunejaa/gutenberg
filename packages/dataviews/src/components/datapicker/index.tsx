@@ -159,6 +159,7 @@ export default function DataPicker< Item >( {
 				) }
 				<DataPickerLayout multiple={ multiple } label={ label } />
 				<DataPickerFooter
+					multiple={ multiple }
 					paginationInfo={ paginationInfo }
 					onFinish={ onFinishWithSelection }
 					selection={ _selection }
@@ -172,6 +173,7 @@ export default function DataPicker< Item >( {
 }
 
 function DataPickerFooter< Item >( {
+	multiple,
 	paginationInfo,
 	onFinish,
 	selection,
@@ -179,6 +181,7 @@ function DataPickerFooter< Item >( {
 	data,
 	getItemId,
 }: {
+	multiple: boolean;
 	paginationInfo: { totalItems: number; totalPages: number };
 	onFinish: () => void;
 	selection: string[];
@@ -220,24 +223,28 @@ function DataPickerFooter< Item >( {
 				{ paginationInfo.totalPages > 1 && <DataViews.Pagination /> }
 			</HStack>
 			<HStack justify="end">
-				<CheckboxControl
-					className="dataviews-view-table-selection-checkbox"
-					__nextHasNoMarginBottom
-					checked={ allSelected }
-					indeterminate={ selection.length > 0 && ! allSelected }
-					onChange={ () => {
-						if ( allSelected ) {
-							onChangeSelection( [] );
-						} else {
-							onChangeSelection(
-								data.map( ( item ) => getItemId( item ) )
-							);
+				{ multiple && (
+					<CheckboxControl
+						className="dataviews-view-table-selection-checkbox"
+						__nextHasNoMarginBottom
+						checked={ allSelected }
+						indeterminate={ selection.length > 0 && ! allSelected }
+						onChange={ () => {
+							if ( allSelected ) {
+								onChangeSelection( [] );
+							} else {
+								onChangeSelection(
+									data.map( ( item ) => getItemId( item ) )
+								);
+							}
+						} }
+						aria-label={
+							allSelected
+								? __( 'Deselect all' )
+								: __( 'Select all' )
 						}
-					} }
-					aria-label={
-						allSelected ? __( 'Deselect all' ) : __( 'Select all' )
-					}
-				/>
+					/>
+				) }
 				<span className="dataviews-bulk-actions-footer__item-count">
 					{ message }
 				</span>
