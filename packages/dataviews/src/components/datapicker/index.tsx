@@ -156,6 +156,7 @@ export default function DataPicker< Item >( {
 				<DataPickerFooter
 					paginationInfo={ paginationInfo }
 					onFinish={ onFinishWithSelection }
+					selection={ _selection }
 				/>
 			</div>
 		</DataViewsContext.Provider>
@@ -165,9 +166,11 @@ export default function DataPicker< Item >( {
 function DataPickerFooter( {
 	paginationInfo,
 	onFinish,
+	selection,
 }: {
 	paginationInfo: { totalItems: number; totalPages: number };
 	onFinish: () => void;
+	selection: string[];
 } ) {
 	const { totalItems, totalPages } = paginationInfo;
 	if ( ! totalItems || ! totalPages || totalPages <= 1 ) {
@@ -181,6 +184,8 @@ function DataPickerFooter( {
 				variant="primary"
 				onClick={ onFinish }
 				__next40pxDefaultSize
+				disabled={ selection.length === 0 }
+				accessibleWhenDisabled
 			>
 				{ __( 'Finish selection' ) }
 			</Button>
