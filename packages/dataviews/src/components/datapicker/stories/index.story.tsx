@@ -20,11 +20,21 @@ import { filterSortAndPaginate } from '../../..';
 const meta = {
 	title: 'DataViews/DataPicker',
 	component: DataPicker,
+	argTypes: {
+		label: {
+			control: 'text',
+			description: 'The label for the picker.',
+		},
+		multiple: {
+			control: 'boolean',
+			description: 'Whether the picker allows multiple selections.',
+		},
+	},
 } as Meta< typeof DataPicker >;
 
 export default meta;
 
-export const Default = () => {
+export const Default = ( { ...args } ) => {
 	const [ view, setView ] = useState< View >( {
 		...DEFAULT_VIEW,
 		fields: [ 'categories' ],
@@ -55,6 +65,7 @@ export const Default = () => {
 				// eslint-disable-next-line no-alert
 				alert( selectedItems );
 			} }
+			{ ...args }
 		/>
 	);
 };
