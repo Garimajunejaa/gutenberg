@@ -232,19 +232,24 @@ const BlockInspectorSingleBlock = ( {
 				getClientIdsOfDescendants,
 				getBlockName,
 				getBlockEditingMode,
+				getBlockParents,
 			} = select( blockEditorStore );
 
-			// Don't show content blocks for navigation blocks
-			if ( blockName === 'core/navigation' ) {
-				return [];
-			}
-
 			return getClientIdsOfDescendants( clientId ).filter(
-				( current ) =>
-					getBlockName( current ) !== 'core/list-item' &&
-					getBlockName( current ) !== 'core/navigation-link' &&
-					getBlockName( current ) !== 'core/navigation-submenu' &&
-					getBlockEditingMode( current ) === 'contentOnly'
+				( current ) => {
+					// Check if this block is within a navigation context
+					const parents = getBlockParents( current );
+					const isWithinNavigation = parents.some( ( parentId ) => {
+						const parentName = getBlockName( parentId );
+						return parentName === 'core/navigation';
+					} );
+
+					return (
+						! isWithinNavigation &&
+						getBlockName( current ) !== 'core/list-item' &&
+						getBlockEditingMode( current ) === 'contentOnly'
+					);
+				}
 			);
 		},
 		[ isSectionBlock, clientId ]
