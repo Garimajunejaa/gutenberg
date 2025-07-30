@@ -24,8 +24,20 @@ import DataViews from '../dataviews';
 import DataPickerGridLayout from './grid-layout';
 
 type DataPickerProps< Item > = {
+	/**
+	 * Whether the picker allows multiple selections.
+	 */
 	multiple?: boolean;
+
+	/**
+	 * A callback that is called when the user finishes selecting items.
+	 */
 	onFinish: ( items: string[] ) => void;
+
+	/**
+	 * The label for the picker.
+	 */
+	label: string;
 
 	// DataViewsContext props
 	view: View;
@@ -47,6 +59,7 @@ const isItemClickable = () => true;
 export default function DataPicker< Item >( {
 	multiple = false,
 	onFinish,
+	label,
 	view,
 	onChangeView,
 	data,
@@ -139,7 +152,7 @@ export default function DataPicker< Item >( {
 				{ isShowingFilter && (
 					<DataViews.Filters className="dataviews-filters__container" />
 				) }
-				<DataPickerLayout multiple={ multiple } />
+				<DataPickerLayout multiple={ multiple } label={ label } />
 				<DataPickerFooter
 					paginationInfo={ paginationInfo }
 					onFinish={ onFinishWithSelection }
@@ -175,7 +188,13 @@ function DataPickerFooter( {
 	);
 }
 
-function DataPickerLayout( { multiple }: { multiple: boolean } ) {
+function DataPickerLayout( {
+	multiple,
+	label,
+}: {
+	multiple: boolean;
+	label: string;
+} ) {
 	const {
 		data,
 		fields,
@@ -199,6 +218,7 @@ function DataPickerLayout( { multiple }: { multiple: boolean } ) {
 		return (
 			<DataPickerGridLayout
 				multiple={ multiple }
+				label={ label }
 				data={ data }
 				getItemId={ getItemId }
 				fields={ fields }

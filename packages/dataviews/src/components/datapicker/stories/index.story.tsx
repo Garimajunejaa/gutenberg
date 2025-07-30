@@ -39,6 +39,7 @@ export const Default = () => {
 
 	return (
 		<DataPicker
+			label="Select a space object"
 			view={ view }
 			onChangeView={ setView }
 			data={ shownData }

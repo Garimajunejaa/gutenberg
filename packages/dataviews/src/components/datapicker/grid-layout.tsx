@@ -26,6 +26,7 @@ import { useUpdatedPreviewSizeOnViewportChange } from '../../dataviews-layouts/g
 
 type DataPickerGridLayoutProps< Item > = {
 	multiple: boolean;
+	label: string;
 	data: ViewBaseProps< Item >[ 'data' ];
 	fields: ViewBaseProps< Item >[ 'fields' ];
 	getItemId: ViewBaseProps< Item >[ 'getItemId' ];
@@ -40,6 +41,7 @@ type DataPickerGridLayoutProps< Item > = {
 
 export default function DataPickerGridLayout< Item >( {
 	multiple,
+	label,
 	data,
 	fields,
 	getItemId,
@@ -80,6 +82,7 @@ export default function DataPickerGridLayout< Item >( {
 						{ ...props }
 						as="ul"
 						className="dataviews-picker-grid"
+						aria-label={ label }
 						role="listbox"
 						aria-multiselectable={ multiple }
 						tabIndex={ 0 }
@@ -207,8 +210,10 @@ function GridItem< Item >( {
 				{ renderedMediaField }
 			</div>
 			<CheckboxControl
-				// This checkbox is decorative so that we don't introduce extra tab stops.
-				// It's hidden from screen readers.
+				// This checkbox is decorative to ensure that there are no extra tab stops
+				// in the grid.
+				// To make that happen, it's hidden from screen readers, has a tabIndex of -1
+				// and has pointer-events: none in its css.
 				aria-hidden
 				tabIndex={ -1 }
 				__nextHasNoMarginBottom
