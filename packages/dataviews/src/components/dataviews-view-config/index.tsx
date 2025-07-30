@@ -47,6 +47,7 @@ import { SORTING_DIRECTIONS, sortIcons, sortLabels } from '../../constants';
 import { VIEW_LAYOUTS } from '../../dataviews-layouts';
 import type { NormalizedField, View } from '../../types';
 import DataViewsContext from '../dataviews-context';
+import InfiniteScrollToggle from './infinite-scroll-toggle';
 import { unlock } from '../../lock-unlock';
 
 const { Menu } = unlock( componentsPrivateApis );
@@ -102,7 +103,6 @@ export function ViewTypeMenu() {
 										if ( 'layout' in viewWithoutLayout ) {
 											delete viewWithoutLayout.layout;
 										}
-										// @ts-expect-error
 										return onChangeView( {
 											...viewWithoutLayout,
 											type: e.target.value,
@@ -801,6 +801,7 @@ export function DataviewsViewConfigDropdown() {
 							{ !! activeLayout?.viewConfigOptions && (
 								<activeLayout.viewConfigOptions />
 							) }
+							<InfiniteScrollToggle />
 							<ItemsPerPageControl />
 						</SettingsSection>
 						<SettingsSection title={ __( 'Properties' ) }>

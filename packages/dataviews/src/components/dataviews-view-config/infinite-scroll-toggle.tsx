@@ -8,12 +8,11 @@ import { useContext } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import DataViewsContext from '../../components/dataviews-context';
-import type { ViewGrid } from '../../types';
+import DataViewsContext from '../dataviews-context';
 
 export default function InfiniteScrollToggle() {
 	const context = useContext( DataViewsContext );
-	const view = context.view as ViewGrid;
+	const { view, onChangeView } = context;
 	const infiniteScrollEnabled = view.layout?.infiniteScroll ?? false;
 
 	// Only render the toggle if an infinite scroll handler is available
@@ -27,7 +26,7 @@ export default function InfiniteScrollToggle() {
 			label={ __( 'Infinite scroll' ) }
 			checked={ infiniteScrollEnabled }
 			onChange={ ( value ) => {
-				context.onChangeView( {
+				onChangeView( {
 					...view,
 					layout: {
 						...view.layout,

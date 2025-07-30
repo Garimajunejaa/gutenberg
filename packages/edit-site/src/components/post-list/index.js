@@ -334,8 +334,7 @@ export default function PostList( { postType } ) {
 	}, [ records, fields, isLoadingFields, view?.sort ] );
 
 	// Handle infinite scroll data management
-	const isInfiniteScroll =
-		view.type === 'grid' && view.layout?.infiniteScroll;
+	const isInfiniteScroll = view.layout?.infiniteScroll;
 	const currentPage = view.page || 1;
 
 	// Update accumulated records when new data arrives

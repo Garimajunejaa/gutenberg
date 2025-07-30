@@ -16,7 +16,7 @@ import ViewTable from './table';
 import ViewGrid from './grid';
 import ViewList from './list';
 import { LAYOUT_GRID, LAYOUT_LIST, LAYOUT_TABLE } from '../constants';
-import GridConfigOptions from './grid/grid-config-options';
+import PreviewSizePicker from './grid/preview-size-picker';
 import DensityPicker from './table/density-picker';
 
 export const VIEW_LAYOUTS = [
@@ -32,7 +32,7 @@ export const VIEW_LAYOUTS = [
 		label: __( 'Grid' ),
 		component: ViewGrid,
 		icon: category,
-		viewConfigOptions: GridConfigOptions,
+		viewConfigOptions: PreviewSizePicker,
 	},
 	{
 		type: LAYOUT_LIST,

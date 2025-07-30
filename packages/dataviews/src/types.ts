@@ -472,11 +472,23 @@ export interface ViewTable extends ViewBase {
 		 * The density of the view.
 		 */
 		density?: Density;
+
+		/**
+		 * Whether infinite scroll is enabled for the table.
+		 */
+		infiniteScroll?: boolean;
 	};
 }
 
 export interface ViewList extends ViewBase {
 	type: 'list';
+
+	layout?: {
+		/**
+		 * Whether infinite scroll is enabled for the list.
+		 */
+		infiniteScroll?: boolean;
+	};
 }
 
 export interface ViewGrid extends ViewBase {
