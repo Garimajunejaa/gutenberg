@@ -184,8 +184,7 @@ function GridItem< Item >( {
 					role="option"
 					aria-posinset={ position }
 					aria-setsize={ setSize }
-					aria-selected={ multiple ? undefined : isSelected }
-					aria-checked={ multiple ? isSelected : undefined }
+					aria-selected={ isSelected }
 					aria-describedby={ descriptionId }
 					onClick={ () => {
 						if ( isSelected ) {
