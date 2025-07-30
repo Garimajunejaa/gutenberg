@@ -233,9 +233,17 @@ const BlockInspectorSingleBlock = ( {
 				getBlockName,
 				getBlockEditingMode,
 			} = select( blockEditorStore );
+
+			// Don't show content blocks for navigation blocks
+			if ( blockName === 'core/navigation' ) {
+				return [];
+			}
+
 			return getClientIdsOfDescendants( clientId ).filter(
 				( current ) =>
 					getBlockName( current ) !== 'core/list-item' &&
+					getBlockName( current ) !== 'core/navigation-link' &&
+					getBlockName( current ) !== 'core/navigation-submenu' &&
 					getBlockEditingMode( current ) === 'contentOnly'
 			);
 		},
