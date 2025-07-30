@@ -9,8 +9,13 @@ import {
 	useMemo,
 } from '@wordpress/element';
 import { useMergeRefs, useResizeObserver } from '@wordpress/compose';
-import { __experimentalHStack as HStack, Button } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import {
+	__experimentalHStack as HStack,
+	Button,
+	CheckboxControl,
+} from '@wordpress/components';
+import { __, _n, sprintf } from '@wordpress/i18n';
+import { closeSmall } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -22,6 +27,8 @@ import type { SetSelection, SelectionOrUpdater } from '../../private-types';
 import DataViewsContext from '../dataviews-context';
 import DataViews from '../dataviews';
 import DataPickerGridLayout from './grid-layout';
+
+const EMPTY_ARRAY: any[] = [];
 
 type DataPickerProps< Item > = {
 	/**
@@ -119,13 +126,11 @@ export default function DataPicker< Item >( {
 				getItemId,
 				defaultLayouts,
 				isItemClickable,
-
-				// props to provide
 				filters,
 				openedFilter,
 				setOpenedFilter,
 				containerWidth,
-				containerRef: { current: null },
+				containerRef,
 				isShowingFilter,
 				setIsShowingFilter,
 			} }
@@ -157,29 +162,90 @@ export default function DataPicker< Item >( {
 					paginationInfo={ paginationInfo }
 					onFinish={ onFinishWithSelection }
 					selection={ _selection }
+					onChangeSelection={ setSelectionWithChange }
+					data={ data }
+					getItemId={ getItemId }
 				/>
 			</div>
 		</DataViewsContext.Provider>
 	);
 }
 
-function DataPickerFooter( {
+function DataPickerFooter< Item >( {
 	paginationInfo,
 	onFinish,
 	selection,
+	onChangeSelection,
+	data,
+	getItemId,
 }: {
 	paginationInfo: { totalItems: number; totalPages: number };
 	onFinish: () => void;
 	selection: string[];
+	onChangeSelection: SetSelection;
+	data: Item[];
+	getItemId: ( item: Item ) => string;
 } ) {
 	const { totalItems, totalPages } = paginationInfo;
 	if ( ! totalItems || ! totalPages || totalPages <= 1 ) {
 		return null;
 	}
 
+	const message =
+		selection.length > 0
+			? sprintf(
+					/* translators: %d: number of items. */
+					_n(
+						'%d Item selected',
+						'%d Items selected',
+						selection.length
+					),
+					selection.length
+			  )
+			: sprintf(
+					/* translators: %d: number of items. */
+					_n( '%d Item', '%d Items', data.length ),
+					data.length
+			  );
+
+	const allSelected = selection.length === data.length;
+
 	return (
 		<HStack expanded={ false } justify="start" className="dataviews-footer">
 			{ paginationInfo.totalPages > 1 && <DataViews.Pagination /> }
+			<CheckboxControl
+				className="dataviews-view-table-selection-checkbox"
+				__nextHasNoMarginBottom
+				checked={ allSelected }
+				indeterminate={ selection.length > 0 && ! allSelected }
+				onChange={ () => {
+					if ( allSelected ) {
+						onChangeSelection( [] );
+					} else {
+						onChangeSelection(
+							data.map( ( item ) => getItemId( item ) )
+						);
+					}
+				} }
+				aria-label={
+					allSelected ? __( 'Deselect all' ) : __( 'Select all' )
+				}
+			/>
+			<span className="dataviews-bulk-actions-footer__item-count">
+				{ message }
+			</span>
+			{ selection.length > 0 && (
+				<Button
+					icon={ closeSmall }
+					showTooltip
+					tooltipPosition="top"
+					size="compact"
+					label={ __( 'Cancel' ) }
+					onClick={ () => {
+						onChangeSelection( EMPTY_ARRAY );
+					} }
+				/>
+			) }
 			<Button
 				variant="primary"
 				onClick={ onFinish }
@@ -187,7 +253,7 @@ function DataPickerFooter( {
 				disabled={ selection.length === 0 }
 				accessibleWhenDisabled
 			>
-				{ __( 'Finish selection' ) }
+				{ __( 'Select' ) }
 			</Button>
 		</HStack>
 	);
