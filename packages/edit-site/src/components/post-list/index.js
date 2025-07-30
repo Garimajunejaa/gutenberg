@@ -412,8 +412,9 @@ export default function PostList( { postType } ) {
 		() => ( {
 			totalItems,
 			totalPages,
+			infiniteScrollHandler,
 		} ),
-		[ totalItems, totalPages ]
+		[ totalItems, totalPages, infiniteScrollHandler ]
 	);
 
 	const { labels, canCreateRecord } = useSelect(
@@ -492,7 +493,6 @@ export default function PostList( { postType } ) {
 				getItemId={ getItemId }
 				getItemLevel={ getItemLevel }
 				defaultLayouts={ defaultLayouts }
-				infiniteScrollHandler={ infiniteScrollHandler }
 				header={
 					window.__experimentalQuickEditDataViews &&
 					view.type !== LAYOUT_LIST &&

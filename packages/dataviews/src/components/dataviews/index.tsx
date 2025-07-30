@@ -51,6 +51,7 @@ type DataViewsProps< Item > = {
 	paginationInfo: {
 		totalItems: number;
 		totalPages: number;
+		infiniteScrollHandler?: () => void;
 	};
 	defaultLayouts: SupportedLayouts;
 	selection?: string[];
@@ -67,7 +68,6 @@ type DataViewsProps< Item > = {
 	children?: ReactNode;
 	perPageSizes?: number[];
 	empty?: ReactNode;
-	infiniteScrollHandler?: () => void;
 } & ( Item extends ItemWithId
 	? { getItemId?: ( item: Item ) => string }
 	: { getItemId: ( item: Item ) => string } );
@@ -143,8 +143,8 @@ function DataViews< Item >( {
 	children,
 	perPageSizes = [ 10, 20, 50, 100 ],
 	empty,
-	infiniteScrollHandler = undefined,
 }: DataViewsProps< Item > ) {
+	const { infiniteScrollHandler } = paginationInfo;
 	const containerRef = useRef< HTMLDivElement | null >( null );
 	const [ containerWidth, setContainerWidth ] = useState( 0 );
 	const resizeObserverRef = useResizeObserver(
