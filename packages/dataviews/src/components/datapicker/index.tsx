@@ -8,7 +8,7 @@ import {
 	useState,
 	useMemo,
 } from '@wordpress/element';
-import { useMergeRefs, useResizeObserver } from '@wordpress/compose';
+import { useResizeObserver } from '@wordpress/compose';
 import {
 	__experimentalHStack as HStack,
 	Button,
@@ -133,12 +133,10 @@ export default function DataPicker< Item >( {
 				containerRef,
 				isShowingFilter,
 				setIsShowingFilter,
+				resizeObserverRef,
 			} }
 		>
-			<div
-				className="dataviews-wrapper"
-				ref={ useMergeRefs( [ containerRef, resizeObserverRef ] ) }
-			>
+			<div className="dataviews-wrapper" ref={ containerRef }>
 				<HStack
 					alignment="top"
 					justify="space-between"

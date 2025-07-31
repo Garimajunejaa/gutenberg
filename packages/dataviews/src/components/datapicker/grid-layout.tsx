@@ -8,7 +8,6 @@ import clsx from 'clsx';
  */
 import {
 	Composite,
-	__experimentalGrid as Grid,
 	__experimentalVStack as VStack,
 	CheckboxControl,
 	Spinner,
@@ -24,7 +23,8 @@ import type {
 	ViewBaseProps,
 } from '../../types';
 import type { SetSelection } from '../../private-types';
-import { useUpdatedPreviewSizeOnViewportChange } from '../../dataviews-layouts/grid/preview-size-picker';
+import { useContext } from '@wordpress/element';
+import DataViewsContext from '../dataviews-context';
 
 type DataPickerGridLayoutProps< Item > = {
 	multiple: boolean;
@@ -54,6 +54,8 @@ export default function DataPickerGridLayout< Item >( {
 	setSize,
 	startPosition,
 }: DataPickerGridLayoutProps< Item > ) {
+	const { resizeObserverRef } = useContext( DataViewsContext );
+
 	const hasData = !! data?.length;
 
 	const titleField = fields.find(
@@ -66,13 +68,14 @@ export default function DataPickerGridLayout< Item >( {
 		( field ) => field.id === view?.descriptionField
 	);
 
-	const updatedPreviewSize = useUpdatedPreviewSizeOnViewportChange();
-	const usedPreviewSize = updatedPreviewSize || view.layout?.previewSize;
-	const gridStyle = usedPreviewSize
-		? {
-				gridTemplateColumns: `repeat(${ usedPreviewSize }, minmax(0, 1fr))`,
-		  }
-		: {};
+	const usedPreviewSize = view.layout?.previewSize;
+	/*
+	 * This is the maximum width that an image can achieve in the grid. The reasoning is:
+	 * The biggest min image width available is 430px (see /dataviews-layouts/grid/preview-size-picker.tsx).
+	 * Because the grid is responsive, once there is room for another column, the images shrink to accommodate it.
+	 * So each image will never grow past 2*430px plus a little more to account for the gaps.
+	 */
+	const size = '900px';
 
 	return (
 		<>
@@ -80,23 +83,24 @@ export default function DataPickerGridLayout< Item >( {
 				<Composite
 					virtualFocus
 					orientation="horizontal"
-					render={ ( props ) => (
-						<Grid
-							{ ...props }
-							as="ul"
+					render={
+						<ul
+							ref={
+								resizeObserverRef as React.RefObject< HTMLUListElement >
+							}
+							style={ {
+								gridTemplateColumns:
+									usedPreviewSize &&
+									`repeat(auto-fill, minmax(${ usedPreviewSize }px, 1fr))`,
+							} }
 							className="dataviews-picker-grid"
 							aria-label={ label }
 							role="listbox"
 							aria-multiselectable={ multiple }
 							tabIndex={ 0 }
-							gap={ 8 }
-							columns={ 2 }
-							alignment="top"
 							aria-busy={ isLoading }
-							style={ gridStyle }
-							children={ props.children }
 						/>
-					) }
+					}
 				>
 					{ data.map( ( item, index ) => {
 						const position = startPosition + index;
@@ -119,6 +123,9 @@ export default function DataPickerGridLayout< Item >( {
 								descriptionField={ descriptionField }
 								setSize={ setSize }
 								position={ position }
+								config={ {
+									sizes: size,
+								} }
 							/>
 						);
 					} ) }
@@ -154,6 +161,9 @@ type GridItemProps< Item > = {
 	descriptionField: NormalizedField< Item > | undefined;
 	setSize: number;
 	position: number;
+	config: {
+		sizes: string;
+	};
 };
 
 function GridItem< Item >( {
@@ -169,11 +179,16 @@ function GridItem< Item >( {
 	descriptionField,
 	setSize,
 	position,
+	config,
 }: GridItemProps< Item > ) {
 	const { showTitle = true, showMedia = true, showDescription = true } = view;
 	const renderedMediaField =
 		showMedia && mediaField?.render ? (
-			<mediaField.render item={ item } field={ mediaField } />
+			<mediaField.render
+				item={ item }
+				field={ mediaField }
+				config={ config }
+			/>
 		) : null;
 	const renderedTitleField =
 		showTitle && titleField?.render ? (
