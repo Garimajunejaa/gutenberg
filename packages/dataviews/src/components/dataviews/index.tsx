@@ -33,7 +33,7 @@ import type { Action, Field, View, SupportedLayouts } from '../../types';
 import type { SelectionOrUpdater } from '../../private-types';
 type ItemWithId = { id: string };
 
-export type DataViewsProps< Item > = {
+type DataViewsProps< Item > = {
 	view: View;
 	onChangeView: ( view: View ) => void;
 	fields: Field< Item >[];
@@ -64,7 +64,7 @@ export type DataViewsProps< Item > = {
 	? { getItemId?: ( item: Item ) => string }
 	: { getItemId: ( item: Item ) => string } );
 
-export const defaultGetItemId = ( item: ItemWithId ) => item.id;
+const defaultGetItemId = ( item: ItemWithId ) => item.id;
 const defaultIsItemClickable = () => true;
 const EMPTY_ARRAY: any[] = [];
 
