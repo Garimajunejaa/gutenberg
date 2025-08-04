@@ -104,11 +104,6 @@ export default function SingleInputControl( {
 		}
 		setSelectedUnits( newUnits );
 	};
-	const handleSliderChange = ( next ) => {
-		const val =
-			next !== undefined ? `${ next }${ computedUnit }` : undefined;
-		changeCornerValue( val );
-	};
 
 	// For shorthand style & backwards compatibility, handle flat string value.
 	const values =
@@ -132,7 +127,7 @@ export default function SingleInputControl( {
 		parseQuantityAndUnitFromRawValue( resolvedPresetValue );
 	const computedUnit = value
 		? parsedUnit
-		: selectedUnits[ corner ] || selectedUnits.flat;
+		: selectedUnits[ corner ] || selectedUnits.flat || 'px';
 	const unitConfig =
 		units && units.find( ( item ) => item.value === computedUnit );
 	const step = unitConfig?.step || 1;
@@ -165,6 +160,12 @@ export default function SingleInputControl( {
 		} ) );
 	}
 	const icon = ICONS[ corner ];
+
+	const handleSliderChange = ( next ) => {
+		const val =
+			next !== undefined ? `${ next }${ computedUnit }` : undefined;
+		changeCornerValue( val );
+	};
 
 	// Controls are wrapped in tooltips as visible labels aren't desired here.
 	// Tooltip rendering also requires the UnitControl to be wrapped. See:
