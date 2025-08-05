@@ -1,7 +1,10 @@
 /**
  * WordPress dependencies
  */
-import { ToggleControl } from '@wordpress/components';
+import {
+	__experimentalToggleGroupControl as ToggleGroupControl,
+	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
+} from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useContext } from '@wordpress/element';
 
@@ -21,19 +24,33 @@ export default function InfiniteScrollToggle() {
 	}
 
 	return (
-		<ToggleControl
+		<ToggleGroupControl
 			__nextHasNoMarginBottom
+			__next40pxDefaultSize
+			isBlock
 			label={ __( 'Infinite scroll' ) }
-			checked={ infiniteScrollEnabled }
+			value={ infiniteScrollEnabled ? 'enabled' : 'disabled' }
 			onChange={ ( value ) => {
+				const newValue = value === 'enabled';
 				onChangeView( {
 					...view,
 					layout: {
 						...view.layout,
-						infiniteScroll: value,
+						infiniteScroll: newValue,
 					},
 				} );
 			} }
-		/>
+		>
+			<ToggleGroupControlOption
+				key="disabled"
+				value="disabled"
+				label={ __( 'Off' ) }
+			/>
+			<ToggleGroupControlOption
+				key="enabled"
+				value="enabled"
+				label={ __( 'On' ) }
+			/>
+		</ToggleGroupControl>
 	);
 }
