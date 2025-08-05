@@ -22,6 +22,7 @@ import {
 	useMemo,
 	useRef,
 	useState,
+	useContext,
 } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { moreVertical } from '@wordpress/icons';
@@ -35,6 +36,7 @@ import {
 	ActionsMenuGroup,
 	ActionModal,
 } from '../../components/dataviews-item-actions';
+import DataViewsContext from '../../components/dataviews-context';
 import type {
 	Action,
 	NormalizedField,
@@ -55,6 +57,7 @@ interface ListViewItemProps< Item > {
 	onSelect: ( item: Item ) => void;
 	otherFields: NormalizedField< Item >[];
 	onDropdownTriggerKeyDown: React.KeyboardEventHandler< HTMLButtonElement >;
+	posinset?: number;
 }
 
 const { Menu } = unlock( componentsPrivateApis );
@@ -153,6 +156,7 @@ function ListItem< Item >( {
 	onSelect,
 	otherFields,
 	onDropdownTriggerKeyDown,
+	posinset,
 }: ListViewItemProps< Item > ) {
 	const { showTitle = true, showMedia = true, showDescription = true } = view;
 	const itemRef = useRef< HTMLDivElement >( null );
@@ -168,6 +172,9 @@ function ListItem< Item >( {
 		const isHover = type === 'mouseenter';
 		setIsHovered( isHover );
 	};
+
+	const isInfiniteScroll = view.layout?.infiniteScroll;
+	const { paginationInfo } = useContext( DataViewsContext );
 
 	useEffect( () => {
 		if ( isSelected ) {
@@ -270,13 +277,17 @@ function ListItem< Item >( {
 		<Composite.Row
 			ref={ itemRef }
 			render={ <div /> }
-			role="row"
+			role={ isInfiniteScroll ? 'article' : 'row' }
 			className={ clsx( {
 				'is-selected': isSelected,
 				'is-hovered': isHovered,
 			} ) }
 			onMouseEnter={ handleHover }
 			onMouseLeave={ handleHover }
+			aria-setsize={
+				isInfiniteScroll ? paginationInfo.totalItems : undefined
+			}
+			aria-posinset={ isInfiniteScroll ? posinset : undefined }
 		>
 			<HStack className="dataviews-view-list__item-wrapper" spacing={ 0 }>
 				<div role="gridcell">
@@ -497,16 +508,18 @@ export default function ViewList< Item >( props: ViewListProps< Item > ) {
 		);
 	}
 
+	const isInfiniteScroll = view.layout?.infiniteScroll;
+
 	return (
 		<Composite
 			id={ baseId }
 			render={ <div /> }
 			className={ clsx( 'dataviews-view-list', className ) }
-			role="grid"
+			role={ isInfiniteScroll ? 'feed' : 'grid' }
 			activeId={ activeCompositeId }
 			setActiveId={ setActiveCompositeId }
 		>
-			{ data.map( ( item ) => {
+			{ data.map( ( item, index ) => {
 				const id = generateCompositeItemIdPrefix( item );
 				return (
 					<ListItem
@@ -522,6 +535,7 @@ export default function ViewList< Item >( props: ViewListProps< Item > ) {
 						descriptionField={ descriptionField }
 						otherFields={ otherFields }
 						onDropdownTriggerKeyDown={ onDropdownTriggerKeyDown }
+						posinset={ index + 1 }
 					/>
 				);
 			} ) }

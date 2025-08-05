@@ -70,6 +70,7 @@ interface TableRowProps< Item > {
 		} & ComponentProps< 'a' >
 	) => ReactElement;
 	isActionsColumnSticky?: boolean;
+	posinset?: number;
 }
 
 function TableColumnField< Item >( {
@@ -114,7 +115,10 @@ function TableRow< Item >( {
 	renderItemLink,
 	onChangeSelection,
 	isActionsColumnSticky,
+	posinset,
 }: TableRowProps< Item > ) {
+	const { paginationInfo } = useContext( DataViewsContext );
+	const isInfiniteScroll = view.layout?.infiniteScroll;
 	const hasPossibleBulkAction = useHasAPossibleBulkAction( actions, item );
 	const isSelected = hasPossibleBulkAction && selection.includes( id );
 	const [ isHovered, setIsHovered ] = useState( false );
@@ -148,6 +152,11 @@ function TableRow< Item >( {
 			onTouchStart={ () => {
 				isTouchDeviceRef.current = true;
 			} }
+			aria-setsize={
+				isInfiniteScroll ? paginationInfo.totalItems : undefined
+			}
+			aria-posinset={ isInfiniteScroll ? posinset : undefined }
+			role={ isInfiniteScroll ? 'article' : undefined }
 			onClick={ ( event ) => {
 				if ( ! hasPossibleBulkAction ) {
 					return;
@@ -316,6 +325,7 @@ function ViewTable< Item >( {
 	};
 
 	const hasData = !! data?.length;
+	const isInfiniteScroll = view.layout?.infiniteScroll;
 
 	const titleField = fields.find( ( field ) => field.id === view.titleField );
 	const mediaField = fields.find( ( field ) => field.id === view.mediaField );
@@ -369,6 +379,7 @@ function ViewTable< Item >( {
 				} ) }
 				aria-busy={ isLoading }
 				aria-describedby={ tableNoticeId }
+				role={ isInfiniteScroll ? 'feed' : undefined }
 			>
 				<thead>
 					<tr className="dataviews-view-table__row">
@@ -510,6 +521,7 @@ function ViewTable< Item >( {
 										isActionsColumnSticky={
 											! isHorizontalScrollEnd
 										}
+										posinset={ index + 1 }
 									/>
 								) ) }
 							</tbody>
@@ -545,6 +557,7 @@ function ViewTable< Item >( {
 									isActionsColumnSticky={
 										! isHorizontalScrollEnd
 									}
+									posinset={ index + 1 }
 								/>
 							) ) }
 					</tbody>
