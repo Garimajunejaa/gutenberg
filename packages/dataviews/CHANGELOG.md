@@ -25,6 +25,7 @@
 
 ### Enhancements
 
+- Add a smaller size to the grid layout ([#71077](https://github.com/WordPress/gutenberg/pull/71077)).
 - Make the media item clickable along the title ([#70985](https://github.com/WordPress/gutenberg/pull/70985)).
 
 ## 5.0.0 (2025-07-23)
