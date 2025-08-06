@@ -13,6 +13,10 @@ import type { ViewGrid } from '../../types';
 
 const imageSizes = [
 	{
+		value: 120,
+		breakpoint: 1,
+	},
+	{
 		value: 230,
 		breakpoint: 1,
 	},
@@ -48,10 +52,10 @@ export default function PreviewSizePicker() {
 		? breakValues
 				.map( ( size, index ) => ( { ...size, index } ) )
 				.filter(
-					( size ) => size.value <= ( view.layout?.previewSize ?? 0 ) // We know the view.layout?.previewSize exists at this point but the linter doesn't seem to.
+					( size ) => size.value <= ( view.layout?.previewSize ?? 1 ) // We know the view.layout?.previewSize exists at this point but the linter doesn't seem to.
 				)
 				.sort( ( a, b ) => b.value - a.value )[ 0 ].index
-		: 0;
+		: 1; //Default to the second smallest size if no preview size is set.
 
 	const marks = breakValues.map( ( size, index ) => {
 		return {
