@@ -38,10 +38,6 @@ export default function PreviewSizePicker() {
 	const context = useContext( DataViewsContext );
 	const view = context.view as ViewGrid;
 
-	if ( context.containerWidth < 588 ) {
-		return null;
-	}
-
 	const breakValues = imageSizes.filter( ( size ) => {
 		return context.containerWidth >= size.breakpoint;
 	} );
