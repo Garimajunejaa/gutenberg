@@ -104,6 +104,9 @@
 			.dataviews-view-grid__field-name {
 				width: 35%;
 				color: $gray-700;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
 			}
 
 			.dataviews-view-grid__field-value {

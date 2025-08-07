@@ -13,6 +13,7 @@ import {
 	Spinner,
 	Flex,
 	FlexItem,
+	Tooltip,
 	privateApis as componentsPrivateApis,
 } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
@@ -227,9 +228,12 @@ function GridItem< Item >( {
 									direction="row"
 								>
 									<>
-										<FlexItem className="dataviews-view-grid__field-name">
-											{ field.header }
-										</FlexItem>
+										{ /* @ts-ignore */ }
+										<Tooltip text={ field.header }>
+											<FlexItem className="dataviews-view-grid__field-name">
+												{ field.header }
+											</FlexItem>
+										</Tooltip>
 										<FlexItem
 											className="dataviews-view-grid__field-value"
 											style={ { maxHeight: 'none' } }
