@@ -398,7 +398,6 @@ export const InfiniteScroll = () => {
 		descriptionField: 'description',
 		mediaField: 'image',
 		layout: {
-			badgeFields: [ 'satellites' ],
 			infiniteScroll: true, // Enable infinite scroll by default
 		},
 	} );
@@ -445,7 +444,7 @@ export const InfiniteScroll = () => {
 
 	// Initialize data on first load or when view changes significantly
 	useEffect( () => {
-		if ( currentPage === 1 ) {
+		if ( currentPage === 1 || ! view.layout?.infiniteScroll ) {
 			// First page - replace all data
 			setAllLoadedRecords( shownData );
 		} else {
@@ -459,7 +458,13 @@ export const InfiniteScroll = () => {
 			} );
 		}
 		setIsLoadingMore( false );
-	}, [ view.search, view.filters, view.perPage, currentPage ] );
+	}, [
+		view.search,
+		view.filters,
+		view.perPage,
+		currentPage,
+		view.layout?.infiniteScroll,
+	] );
 
 	const paginationInfo = {
 		totalItems,
