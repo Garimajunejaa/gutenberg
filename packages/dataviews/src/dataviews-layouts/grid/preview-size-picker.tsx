@@ -17,6 +17,10 @@ const imageSizes = [
 		breakpoint: 1,
 	},
 	{
+		value: 170,
+		breakpoint: 1,
+	},
+	{
 		value: 230,
 		breakpoint: 1,
 	},
@@ -48,10 +52,10 @@ export default function PreviewSizePicker() {
 		? breakValues
 				.map( ( size, index ) => ( { ...size, index } ) )
 				.filter(
-					( size ) => size.value <= ( view.layout?.previewSize ?? 1 ) // We know the view.layout?.previewSize exists at this point but the linter doesn't seem to.
+					( size ) => size.value <= ( view.layout?.previewSize ?? 2 ) // We know the view.layout?.previewSize exists at this point but the linter doesn't seem to.
 				)
 				.sort( ( a, b ) => b.value - a.value )[ 0 ].index
-		: 1; //Default to the second smallest size if no preview size is set.
+		: 2; // Default to the third smallest size if no preview size is set.
 
 	const marks = breakValues.map( ( size, index ) => {
 		return {
